@@ -17,5 +17,13 @@
       }
     ],
     "no-restricted-syntax": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.test.ts"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
