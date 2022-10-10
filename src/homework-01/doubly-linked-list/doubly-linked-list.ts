@@ -1,5 +1,5 @@
 import DoublyLinkedListNodeImpl from './doubly-linked-list-node';
-import type { DoublyLinkedList, DoublyLinkedListNode } from './doubly-linked-list.interface';
+import type { DoublyLinkedList, DoublyLinkedListNode, Predicat } from './doubly-linked-list.interface';
 
 export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Iterable<T> {
   #head: DoublyLinkedListNode<T> | null = null;
@@ -32,17 +32,17 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return null;
   }
 
-  // TODO
   get head() {
-    return this.#head;
+    const nodeClone = this.#head ? { ...this.#head } : null;
+    return Object.freeze(nodeClone);
   }
 
-  // TODO
   get tail() {
-    return this.#tail;
+    const nodeClone = this.#tail ? { ...this.#tail } : null;
+    return Object.freeze(nodeClone);
   }
 
-  isEmpty() {
+  get isEmpty() {
     return this.#head === null;
   }
 
@@ -121,12 +121,12 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return firstNode;
   }
 
-  insertBefore(valueAfter: T, newValue: T) {
+  insertBefore(cb: Predicat<T>, newValue: T) {
     const iterator = this.#iterateListNodes();
     let currentNode = iterator.next().value;
 
     while (currentNode) {
-      if (currentNode?.value === valueAfter) {
+      if (cb(currentNode?.value)) {
         if (currentNode.prev === null) {
           this.unshift(newValue);
           return true;
@@ -146,12 +146,12 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return false;
   }
 
-  insertAfter(valueBefore: T, newValue: T) {
+  insertAfter(cb: Predicat<T>, newValue: T) {
     const iterator = this.#iterateListNodes();
     let currentNode = iterator.next().value;
 
     while (currentNode) {
-      if (currentNode?.value === valueBefore) {
+      if (cb(currentNode?.value)) {
         if (currentNode.next === null) {
           this.push(newValue);
           return true;
@@ -171,12 +171,12 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return false;
   }
 
-  find(value: T) {
+  find(cb: Predicat<T>) {
     const iterator = this.#iterateListNodes();
     let currentNode = iterator.next().value;
 
     while (currentNode) {
-      if (currentNode.value === value) {
+      if (cb(currentNode.value)) {
         return currentNode;
       }
 
@@ -186,12 +186,12 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return null;
   }
 
-  remove(value: T) {
+  remove(cb: Predicat<T>) {
     const iterator = this.#iterateListNodes();
     let currentNode = iterator.next().value;
 
     while (currentNode) {
-      if (currentNode.value === value) {
+      if (cb(currentNode.value)) {
         if (currentNode.prev === null) {
           return this.shift();
         }

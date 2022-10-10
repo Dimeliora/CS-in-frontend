@@ -16,10 +16,10 @@ describe('Doubly linked list implementation', () => {
   it('Check if list is empty', () => {
     const list = new DoublyLinkedListImpl<number>();
 
-    expect(list.isEmpty()).toBe(true);
+    expect(list.isEmpty).toBe(true);
 
     list.push(0);
-    expect(list.isEmpty()).toBe(false);
+    expect(list.isEmpty).toBe(false);
   });
 
   it('List clean up', () => {
@@ -87,52 +87,52 @@ describe('Doubly linked list implementation', () => {
   it('Inserting new value before the given value', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
 
-    expect(list.insertBefore(1, 0.5)).toBe(true);
+    expect(list.insertBefore((value) => value === 1, 0.5)).toBe(true);
     expect(list.head?.next?.value).toBe(0.5);
     expect(list.head?.next?.next?.value).toBe(1);
 
-    expect(list.insertBefore(0, -1)).toBe(true);
+    expect(list.insertBefore((value) => value === 0, -1)).toBe(true);
     expect(list.head?.value).toBe(-1);
     expect(list.head?.next?.value).toBe(0);
 
-    expect(list.insertAfter(10, 42)).toBe(false);
+    expect(list.insertBefore((value) => value === 10, 42)).toBe(false);
   });
 
   it('Inserting new value after the given value', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
 
-    expect(list.insertAfter(1, 1.5)).toBe(true);
+    expect(list.insertAfter((value) => value === 1, 1.5)).toBe(true);
     expect(list.tail?.prev?.value).toBe(1.5);
     expect(list.head?.next?.next?.value).toBe(1.5);
 
-    expect(list.insertAfter(2, 3)).toBe(true);
+    expect(list.insertAfter((value) => value === 2, 3)).toBe(true);
     expect(list.tail?.value).toBe(3);
     expect(list.tail?.prev?.value).toBe(2);
 
-    expect(list.insertAfter(10, 42)).toBe(false);
+    expect(list.insertAfter((value) => value === 10, 42)).toBe(false);
   });
 
   it('Searching value within list', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
 
-    expect(list.find(1)?.value).toBe(1);
-    expect(list.find(2)?.value).toBe(2);
-    expect(list.find(42)).toBeNull();
+    expect(list.find((value) => value === 1)?.value).toBe(1);
+    expect(list.find((value) => value === 2)?.value).toBe(2);
+    expect(list.find((value) => value === 42)).toBeNull();
   });
 
   it('Removing value from list', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2, 3, 4]);
 
-    expect(list.remove(1)?.value).toBe(1);
+    expect(list.remove((value) => value === 1)?.value).toBe(1);
     expect(list.head?.next?.value).toBe(2);
 
-    expect(list.remove(0)?.value).toBe(0);
+    expect(list.remove((value) => value === 0)?.value).toBe(0);
     expect(list.head?.value).toBe(2);
 
-    expect(list.remove(4)?.value).toBe(4);
+    expect(list.remove((value) => value === 4)?.value).toBe(4);
     expect(list.tail?.value).toBe(3);
 
-    expect(list.remove(42)).toBeNull();
+    expect(list.remove((value) => value === 42)).toBeNull();
   });
 
   it('List instance must be iterable', () => {
