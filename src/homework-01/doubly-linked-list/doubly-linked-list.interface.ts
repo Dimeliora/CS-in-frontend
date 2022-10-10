@@ -1,4 +1,4 @@
-export type Predicat<T> = (value: T) => boolean;
+export type Predicate<T> = (value: T) => boolean;
 
 export interface DoublyLinkedListNode<T = unknown> {
   value: T;
@@ -15,10 +15,10 @@ export interface DoublyLinkedList<T = unknown> {
   pop(): DoublyLinkedListNode<T> | null;
   unshift(value: T): DoublyLinkedList;
   shift(): DoublyLinkedListNode<T> | null;
-  insertBefore(cb: Predicat<T>, newValue: T): boolean;
-  insertAfter(cb: Predicat<T>, newValue: T): boolean;
-  find(cb: Predicat<T>): DoublyLinkedListNode<T> | null;
-  remove(cb: Predicat<T>): DoublyLinkedListNode<T> | null;
+  insertBefore(cb: Predicate<T>, newValue: T): boolean;
+  insertAfter(cb: Predicate<T>, newValue: T): boolean;
+  find(cb: Predicate<T>): DoublyLinkedListNode<T> | null;
+  remove(cb: Predicate<T>): DoublyLinkedListNode<T> | null;
   reverse(): DoublyLinkedList;
   values(): Iterator<T>;
   reversedValues(): Iterator<T>;
