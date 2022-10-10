@@ -6,8 +6,6 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
 
   #tail: DoublyLinkedListNode<T> | null = null;
 
-  #size: number = 0;
-
   constructor(iterable?: Iterable<T>) {
     // eslint-disable-next-line eqeqeq
     if (iterable == undefined) {
@@ -23,6 +21,17 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     }
   }
 
+  *#iterateListNodes(direction: 'forward' | 'backward' = 'forward') {
+    let currentNode = direction === 'forward' ? this.#head : this.#tail;
+
+    while (currentNode !== null) {
+      yield currentNode;
+      currentNode = direction === 'forward' ? currentNode.next : currentNode.prev;
+    }
+
+    return null;
+  }
+
   // TODO
   get head() {
     return this.#head;
@@ -33,12 +42,15 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return this.#tail;
   }
 
-  get size() {
-    return this.#size;
+  isEmpty() {
+    return this.#head === null;
   }
 
-  isEmpty() {
-    return this.#size === 0;
+  clean(): this {
+    this.#head = null;
+    this.#tail = null;
+
+    return this;
   }
 
   push(value: T): this {
@@ -54,7 +66,6 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     }
 
     this.#tail = newNode;
-    this.#size += 1;
 
     return this;
   }
@@ -72,7 +83,6 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     }
 
     this.#tail = lastNode.prev;
-    this.#size -= 1;
 
     return lastNode;
   }
@@ -90,7 +100,6 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     }
 
     this.#head = newNode;
-    this.#size += 1;
 
     return this;
   }
@@ -108,24 +117,114 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     }
 
     this.#head = firstNode.next;
-    this.#size -= 1;
 
     return firstNode;
   }
 
+  insertBefore(valueAfter: T, newValue: T) {
+    const iterator = this.#iterateListNodes();
+    let currentNode = iterator.next().value;
+
+    while (currentNode) {
+      if (currentNode?.value === valueAfter) {
+        if (currentNode.prev === null) {
+          this.unshift(newValue);
+          return true;
+        }
+
+        const newNode = new DoublyLinkedListNodeImpl(newValue);
+        newNode.next = currentNode;
+        newNode.prev = currentNode.prev;
+        newNode.prev.next = newNode;
+        currentNode.prev = newNode;
+        return true;
+      }
+
+      currentNode = iterator.next().value;
+    }
+
+    return false;
+  }
+
+  insertAfter(valueBefore: T, newValue: T) {
+    const iterator = this.#iterateListNodes();
+    let currentNode = iterator.next().value;
+
+    while (currentNode) {
+      if (currentNode?.value === valueBefore) {
+        if (currentNode.next === null) {
+          this.push(newValue);
+          return true;
+        }
+
+        const newNode = new DoublyLinkedListNodeImpl(newValue);
+        newNode.next = currentNode.next;
+        currentNode.next.prev = newNode;
+        newNode.prev = currentNode;
+        currentNode.next = newNode;
+        return true;
+      }
+
+      currentNode = iterator.next().value;
+    }
+
+    return false;
+  }
+
+  find(value: T) {
+    const iterator = this.#iterateListNodes();
+    let currentNode = iterator.next().value;
+
+    while (currentNode) {
+      if (currentNode.value === value) {
+        return currentNode;
+      }
+
+      currentNode = iterator.next().value;
+    }
+
+    return null;
+  }
+
+  remove(value: T) {
+    const iterator = this.#iterateListNodes();
+    let currentNode = iterator.next().value;
+
+    while (currentNode) {
+      if (currentNode.value === value) {
+        if (currentNode.prev === null) {
+          return this.shift();
+        }
+
+        if (currentNode.next === null) {
+          return this.pop();
+        }
+
+        [currentNode.next.prev, currentNode.prev.next] = [currentNode.prev, currentNode.next];
+        return currentNode;
+      }
+
+      currentNode = iterator.next().value;
+    }
+
+    return null;
+  }
+
   reverse() {
-    if (this.#size < 2) {
+    if (this.#head === this.#tail) {
       return this;
     }
 
-    let currentNode = this.#tail;
+    const iterator = this.#iterateListNodes('backward');
+    let currentNode = iterator.next().value;
+
     this.#tail = this.#head;
     this.#head = currentNode;
 
     let prevNode: DoublyLinkedListNode<T> | null;
 
-    for (let index = 0; index < this.#size; index += 1) {
-      prevNode = currentNode?.prev ?? null;
+    while (currentNode) {
+      prevNode = iterator.next().value;
 
       if (currentNode) {
         currentNode.prev = currentNode.next;
@@ -138,16 +237,19 @@ export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Ite
     return this;
   }
 
-  *values(): Iterator<T> {
-    let currentNode = this.#head;
-
-    while (currentNode) {
-      yield currentNode.value;
-      currentNode = currentNode.next;
+  *values() {
+    for (const node of this.#iterateListNodes()) {
+      yield node.value;
     }
   }
 
-  [Symbol.iterator](): Iterator<T> {
+  *reversedValues() {
+    for (const node of this.#iterateListNodes('backward')) {
+      yield node.value;
+    }
+  }
+
+  [Symbol.iterator]() {
     return this.values();
   }
 }
