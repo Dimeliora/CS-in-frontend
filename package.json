@@ -7,7 +7,8 @@
     "test": "jest",
     "lint:fix": "eslint ./src/**/*.ts --fix",
     "cleanup": "rimraf ./build",
-    "build": "npm run cleanup && tsc"
+    "build:dev": "npm run cleanup && tsc -p tsconfig.development.json",
+    "build:prod": "npm run cleanup && tsc -p tsconfig.production.json"
   },
   "keywords": [],
   "author": {
