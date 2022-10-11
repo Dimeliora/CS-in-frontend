@@ -6,7 +6,7 @@ export default class StackImpl<T = unknown> implements Stack<T> {
   #stackPointer: number = -1;
 
   constructor(maxStackSize: number) {
-    if (maxStackSize <= 0) {
+    if (maxStackSize <= 0 || !Number.isInteger(maxStackSize)) {
       throw new Error('Invalid stack size value provided');
     }
 

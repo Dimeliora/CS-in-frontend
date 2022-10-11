@@ -3,6 +3,7 @@ import Stack from './stack';
 describe('Stack implementation based on array', () => {
   it('Attempt to construct stack with invalid max size value', () => {
     expect(() => new Stack(0)).toThrowError('Invalid stack size value provided');
+    expect(() => new Stack(2.5)).toThrowError('Invalid stack size value provided');
   });
 
   it('Pushing value into stack', () => {
