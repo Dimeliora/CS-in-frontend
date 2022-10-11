@@ -1,6 +1,6 @@
 import type Stack from './stack.interface';
 
-export default class StackImpl<T> implements Stack<T> {
+export default class StackImpl<T = unknown> implements Stack<T> {
   #stack: T[];
 
   #stackPointer: number = -1;
