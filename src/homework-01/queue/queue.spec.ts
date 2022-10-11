@@ -4,9 +4,9 @@ describe('Queue implementation', () => {
   it('Insertion value into queue', () => {
     const queue = new Queue<number>();
 
-    queue.insert(0);
+    queue.enqueue(0);
     expect(queue.peek()).toBe(0);
-    queue.insert(1);
+    queue.enqueue(1);
     expect(queue.peek()).toBe(0);
     expect(queue.isEmpty).toBe(false);
   });
@@ -14,11 +14,11 @@ describe('Queue implementation', () => {
   it('Removing value from queue', () => {
     const queue = new Queue<number>();
 
-    queue.insert(0);
-    queue.insert(1);
-    expect(queue.remove()).toBe(0);
+    queue.enqueue(0);
+    queue.enqueue(1);
+    expect(queue.dequeue()).toBe(0);
     expect(queue.peek()).toBe(1);
-    expect(queue.remove()).toBe(1);
+    expect(queue.dequeue()).toBe(1);
     expect(queue.peek()).toBeNull();
     expect(queue.isEmpty).toBe(true);
   });
@@ -26,6 +26,6 @@ describe('Queue implementation', () => {
   it('Removing value from an empty queue', () => {
     const queue = new Queue<number>();
 
-    expect(() => queue.remove()).toThrowError('Queue is empty');
+    expect(() => queue.dequeue()).toThrowError('Queue is empty');
   });
 });

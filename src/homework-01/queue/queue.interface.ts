@@ -1,6 +1,6 @@
-export default interface Queue<T = unknown> {
+export default interface Queue<T> {
   isEmpty: boolean;
-  insert(value: T): Queue<T>;
-  remove(): T | null;
+  enqueue(value: T): Queue<T>;
+  dequeue(): T | null;
   peek(): T | null;
 }
