@@ -21,7 +21,7 @@ export default class StructureImpl<T = unknown> implements Structure<T> {
     return mappedFunctionBody;
   }
 
-  constructor(keys: (string | number)[]) {
+  constructor(keys: Key[]) {
     if (!Array.isArray(keys) || keys.length === 0) {
       throw new Error('Array of keys must be provided');
     }
