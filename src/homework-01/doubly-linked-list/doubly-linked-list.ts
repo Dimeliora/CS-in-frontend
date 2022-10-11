@@ -1,7 +1,7 @@
 import DoublyLinkedListNodeImpl from './doubly-linked-list-node';
 import type { DoublyLinkedList, DoublyLinkedListNode, Predicate } from './doubly-linked-list.interface';
 
-export default class DoublyLinkedListImpl<T> implements DoublyLinkedList<T>, Iterable<T> {
+export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedList<T>, Iterable<T> {
   #head: DoublyLinkedListNode<T> | null = null;
 
   #tail: DoublyLinkedListNode<T> | null = null;
