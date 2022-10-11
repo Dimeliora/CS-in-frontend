@@ -1,6 +1,6 @@
 export default interface Queue<T> {
   isEmpty: boolean;
   enqueue(value: T): Queue<T>;
-  dequeue(): T | null;
+  dequeue(): T;
   peek(): T | null;
 }
