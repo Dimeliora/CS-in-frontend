@@ -210,7 +210,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return null;
   }
 
-  reverse() {
+  reverse(): this {
     if (this.#head === this.#tail) {
       return this;
     }
