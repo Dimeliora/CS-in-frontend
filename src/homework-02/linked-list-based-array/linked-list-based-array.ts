@@ -25,8 +25,8 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return this.#length;
   }
 
-  #addChunk(): T[] {
-    const newChunk = Array<T>(this.#chunkSize);
+  #addChunk(): Optional<T>[] {
+    const newChunk = Array<Optional<T>>(this.#chunkSize);
     this.#list.push(newChunk);
     return newChunk;
   }
