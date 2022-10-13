@@ -28,27 +28,40 @@ describe('Dynamic array implementation with doubly linked list', () => {
     expect(array.length).toBe(0);
   });
 
+  it('Shifting value from array', () => {
+    const array = new DynamicArray<number>(5);
+
+    for (let i = 1; i <= 5; i += 1) {
+      array.push(i);
+    }
+
+    expect(array.shift()).toBe(1);
+    expect(array.shift()).toBe(2);
+    expect(array.shift()).toBe(3);
+    expect(array.shift()).toBe(4);
+    expect(array.shift()).toBe(5);
+    expect(array.length).toBe(0);
+  });
+
   it('Joining array elements with delimiter', () => {
     const array = new DynamicArray<number>(3);
 
-    array.push(1);
-    array.push(2);
-    array.push(3);
-    array.push(4);
-    array.push(5);
-    expect(array.join()).toBe('1, 2, 3, 4, 5');
+    for (let i = 1; i <= 5; i += 1) {
+      array.push(i);
+    }
+
+    expect(array.join()).toBe('1,2,3,4,5');
     expect(array.join('-')).toBe('1-2-3-4-5');
   });
 
   it('Conversion array to string', () => {
     const array = new DynamicArray<number>(3);
 
-    array.push(1);
-    array.push(2);
-    array.push(3);
-    array.push(4);
-    array.push(5);
-    expect(String(array)).toBe('1, 2, 3, 4, 5');
+    for (let i = 1; i <= 5; i += 1) {
+      array.push(i);
+    }
+
+    expect(String(array)).toBe('1,2,3,4,5');
   });
 
   it('Mapping array to another one (without mutation of the original one)', () => {
@@ -87,9 +100,10 @@ describe('Dynamic array implementation with doubly linked list', () => {
   it('Array instance must be iterable', () => {
     const array = new DynamicArray<number>(3);
 
-    array.push(1);
-    array.push(2);
-    array.push(3);
-    expect([...array]).toEqual([1, 2, 3]);
+    for (let i = 1; i <= 5; i += 1) {
+      array.push(i);
+    }
+
+    expect([...array]).toEqual([1, 2, 3, 4, 5]);
   });
 });

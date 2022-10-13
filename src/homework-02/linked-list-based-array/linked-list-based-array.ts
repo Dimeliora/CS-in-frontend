@@ -1,8 +1,13 @@
 import { DoublyLinkedList } from '../../homework-01';
-import type { DynamicArray, MapArrayCallback, FilterArrayCallback } from './linked-list-based-array.interface';
+import type {
+  DynamicArray,
+  Optional,
+  MapArrayCallback,
+  FilterArrayCallback,
+} from './linked-list-based-array.interface';
 
 export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, Iterable<T> {
-  #list: DoublyLinkedList<T[]> = new DoublyLinkedList<T[]>();
+  #list: DoublyLinkedList<Optional<T>[]> = new DoublyLinkedList<Optional<T>[]>();
 
   #length: number = 0;
 
@@ -26,7 +31,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return newChunk;
   }
 
-  #getLastElementPosition(index: number): [number, (T | undefined)[]] | null {
+  #getElementPosition(index: number): [number, Optional<T>[]] | null {
     const iterator = this.#list.values();
     const chunkElementIndex = index % this.#chunkSize;
     let chunkCounter = Math.floor(index / this.#chunkSize);
@@ -45,7 +50,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
   }
 
   push(value: T): this {
-    const lastElementPosition = this.#getLastElementPosition(this.#length - 1);
+    const lastElementPosition = this.#getElementPosition(this.#length - 1);
     if (lastElementPosition !== null) {
       const [lastElementIndex, lastChunk] = lastElementPosition;
 
@@ -65,7 +70,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
   }
 
   pop() {
-    const lastElementPosition = this.#getLastElementPosition(this.#length - 1);
+    const lastElementPosition = this.#getElementPosition(this.#length - 1);
     if (lastElementPosition === null) {
       return undefined;
     }
@@ -83,14 +88,58 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
   }
 
   get(index: number) {
-    const lastElementPosition = this.#getLastElementPosition(index);
-    if (lastElementPosition === null) {
+    const elementPosition = this.#getElementPosition(index);
+    if (elementPosition === null) {
       return undefined;
     }
 
-    const [lastElementIndex, lastChunk] = lastElementPosition;
+    const [lastElementIndex, lastChunk] = elementPosition;
 
     return lastChunk[lastElementIndex];
+  }
+
+  shift() {
+    const iterator = this.#list.values();
+    let currentChunk = iterator.next().value;
+    let firstElement: Optional<T>;
+
+    // Array has no elements at all
+    if (!currentChunk) {
+      return firstElement;
+    }
+
+    [firstElement] = currentChunk;
+    this.#length -= 1;
+    // Array has the only element, removing empty chunk
+    if (currentChunk[1] === undefined) {
+      this.#list.pop();
+      return firstElement;
+    }
+
+    let nextChunk = iterator.next().value;
+    while (currentChunk) {
+      for (let index = 0; index < this.#chunkSize - 1; index += 1) {
+        currentChunk[index] = currentChunk[index + 1];
+      }
+
+      // There is no next chunk, nothing to move, so removing the last one in chunk
+      if (!nextChunk) {
+        currentChunk[this.#chunkSize - 1] = undefined;
+        return firstElement;
+      }
+
+      [currentChunk[this.#chunkSize - 1]] = nextChunk;
+      // Next chunk has the only element, so removing chunk from list
+      if (nextChunk[1] === undefined) {
+        this.#list.pop();
+        return firstElement;
+      }
+
+      currentChunk = nextChunk;
+      nextChunk = iterator.next().value;
+    }
+
+    return firstElement;
   }
 
   map<U>(cb: MapArrayCallback<T, U>) {
@@ -119,7 +168,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return filteredArray;
   }
 
-  join(glue: string = ', ') {
+  join(glue: string = ',') {
     let stringifiedArray = '';
 
     for (const chunk of this.#list.values()) {
