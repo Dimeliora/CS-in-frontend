@@ -9,59 +9,81 @@ describe('Dynamic array implementation with doubly linked list', () => {
   it('Pushing value into array', () => {
     const array = new DynamicArray<number>(3);
 
-    array.push(1);
-    array.push(2);
-    expect(array.get(0)).toBe(1);
-    expect(array.get(1)).toBe(2);
-    expect(array.get(2)).toBeUndefined();
-    expect(array.length).toBe(2);
+    for (let i = 0; i <= 4; i += 1) {
+      array.push(i);
+    }
+
+    for (let i = 0; i <= 4; i += 1) {
+      expect(array.get(i)).toBe(i);
+    }
+
+    expect(array.get(5)).toBeUndefined();
+    expect(array.length).toBe(5);
   });
 
   it('Popping value from array', () => {
     const array = new DynamicArray<number>(3);
 
-    array.push(1);
-    array.push(2);
-    expect(array.pop()).toBe(2);
-    expect(array.pop()).toBe(1);
+    for (let i = 0; i <= 4; i += 1) {
+      array.push(i);
+    }
+
+    for (let i = 4; i >= 0; i -= 1) {
+      expect(array.pop()).toBe(i);
+    }
+
     expect(array.pop()).toBeUndefined();
     expect(array.length).toBe(0);
   });
 
   it('Shifting value from array', () => {
-    const array = new DynamicArray<number>(5);
+    const array = new DynamicArray<number>(3);
 
-    for (let i = 1; i <= 5; i += 1) {
+    for (let i = 0; i <= 4; i += 1) {
       array.push(i);
     }
 
-    expect(array.shift()).toBe(1);
-    expect(array.shift()).toBe(2);
-    expect(array.shift()).toBe(3);
-    expect(array.shift()).toBe(4);
-    expect(array.shift()).toBe(5);
+    for (let i = 0; i <= 4; i += 1) {
+      expect(array.shift()).toBe(i);
+    }
+
+    expect(array.shift()).toBeUndefined();
     expect(array.length).toBe(0);
+  });
+
+  it('Unshifting value into array', () => {
+    const array = new DynamicArray<number>(3);
+
+    for (let i = 4; i >= 0; i -= 1) {
+      array.unshift(i);
+    }
+
+    for (let i = 0; i <= 4; i += 1) {
+      expect(array.get(i)).toBe(i);
+    }
+
+    expect(array.length).toBe(5);
   });
 
   it('Joining array elements with delimiter', () => {
     const array = new DynamicArray<number>(3);
 
-    for (let i = 1; i <= 5; i += 1) {
+    for (let i = 0; i <= 4; i += 1) {
       array.push(i);
     }
 
-    expect(array.join()).toBe('1,2,3,4,5');
-    expect(array.join('-')).toBe('1-2-3-4-5');
+    expect(array.join()).toBe('0,1,2,3,4');
+    expect(array.join('-')).toBe('0-1-2-3-4');
   });
 
   it('Conversion array to string', () => {
     const array = new DynamicArray<number>(3);
 
-    for (let i = 1; i <= 5; i += 1) {
+    for (let i = 0; i <= 4; i += 1) {
       array.push(i);
     }
 
-    expect(String(array)).toBe('1,2,3,4,5');
+    expect(String(array)).toBe('0,1,2,3,4');
   });
 
   it('Mapping array to another one (without mutation of the original one)', () => {
@@ -100,10 +122,10 @@ describe('Dynamic array implementation with doubly linked list', () => {
   it('Array instance must be iterable', () => {
     const array = new DynamicArray<number>(3);
 
-    for (let i = 1; i <= 5; i += 1) {
+    for (let i = 0; i <= 4; i += 1) {
       array.push(i);
     }
 
-    expect([...array]).toEqual([1, 2, 3, 4, 5]);
+    expect([...array]).toEqual([0, 1, 2, 3, 4]);
   });
 });

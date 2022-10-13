@@ -6,15 +6,14 @@ export type FilterArrayCallback<T> = (element: T, index: number, array: DynamicA
 
 export interface DynamicArray<T> {
   length: number;
+  get(index: number): T | undefined;
   push(value: T): DynamicArray<T>;
   pop(): T | undefined;
   shift(): T | undefined;
-  // unshift(value: T): DynamicArray<T>;
-  // splice(start: number, end: number): DynamicArray<T>;
-  get(index: number): T | undefined;
-  join(glue?: string): string;
+  unshift(value: T): DynamicArray<T>;
   map<U>(cb: MapArrayCallback<T, U>): DynamicArray<U>;
   filter(cb: FilterArrayCallback<T>): DynamicArray<T>;
+  join(glue?: string): string;
   values(): Iterator<T>;
   toString(): string;
 }

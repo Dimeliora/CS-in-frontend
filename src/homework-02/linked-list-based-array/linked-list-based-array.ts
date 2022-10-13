@@ -49,6 +49,17 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return [chunkElementIndex, currentChunk];
   }
 
+  get(index: number) {
+    const elementPosition = this.#getElementPosition(index);
+    if (elementPosition === null) {
+      return undefined;
+    }
+
+    const [lastElementIndex, lastChunk] = elementPosition;
+
+    return lastChunk[lastElementIndex];
+  }
+
   push(value: T): this {
     const lastElementPosition = this.#getElementPosition(this.#length - 1);
     if (lastElementPosition !== null) {
@@ -87,17 +98,6 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return lastElement;
   }
 
-  get(index: number) {
-    const elementPosition = this.#getElementPosition(index);
-    if (elementPosition === null) {
-      return undefined;
-    }
-
-    const [lastElementIndex, lastChunk] = elementPosition;
-
-    return lastChunk[lastElementIndex];
-  }
-
   shift() {
     const iterator = this.#list.values();
     let currentChunk = iterator.next().value;
@@ -122,14 +122,14 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
         currentChunk[index] = currentChunk[index + 1];
       }
 
-      // There is no next chunk, nothing to move, so removing the last one in chunk
+      // There is no next chunk, nothing to move, so removing the last one in the chunk
       if (!nextChunk) {
         currentChunk[this.#chunkSize - 1] = undefined;
         return firstElement;
       }
 
       [currentChunk[this.#chunkSize - 1]] = nextChunk;
-      // Next chunk has the only element, so removing chunk from list
+      // Next chunk has the only element, so removing chunk from the list
       if (nextChunk[1] === undefined) {
         this.#list.pop();
         return firstElement;
@@ -140,6 +140,45 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     }
 
     return firstElement;
+  }
+
+  unshift(value: T) {
+    const iterator = this.#list.reversedValues();
+    let currentChunk = iterator.next().value;
+    let prevChunk: ReturnType<typeof iterator.next>['value'];
+
+    // Array has no elements at all
+    if (!currentChunk) {
+      return this.push(value);
+    }
+
+    // Last chunk has no more space to move, creating the new one, moving last element from previous chunk
+    if (currentChunk[this.#chunkSize - 1] !== undefined) {
+      prevChunk = this.#addChunk();
+      prevChunk[0] = currentChunk[this.#chunkSize - 1];
+    }
+
+    while (currentChunk) {
+      for (let index = this.#chunkSize - 1; index > 0; index -= 1) {
+        currentChunk[index] = currentChunk[index - 1];
+      }
+
+      prevChunk = currentChunk;
+      currentChunk = iterator.next().value;
+
+      // Current chunk is not a first chunk of an array, moving edge value and keep going
+      if (currentChunk) {
+        prevChunk[0] = currentChunk[this.#chunkSize - 1];
+
+        // Otherwise putting new value on the first place of the first chunk
+      } else {
+        prevChunk[0] = value;
+      }
+    }
+
+    this.#length += 1;
+
+    return this;
   }
 
   map<U>(cb: MapArrayCallback<T, U>) {
