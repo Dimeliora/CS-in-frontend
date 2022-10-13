@@ -51,6 +51,39 @@ describe('Dynamic array implementation with doubly linked list', () => {
     expect(String(array)).toBe('1, 2, 3, 4, 5');
   });
 
+  it('Mapping array to another one (without mutation of the original one)', () => {
+    const array = new DynamicArray<string>(5);
+    const string = 'hello';
+
+    for (const char of string) {
+      array.push(char);
+    }
+
+    const upperCased = array.map((char) => char.toUpperCase());
+    expect(upperCased.join('')).toBe('HELLO');
+    expect(array.join('')).toBe(string);
+
+    const partiallyUpperCased = array.map((char, index) => (index % 2 !== 0 ? char.toUpperCase() : char));
+    expect(partiallyUpperCased.join('')).toBe('hElLo');
+  });
+
+  it('Filtering array (without mutation of the original one)', () => {
+    const array = new DynamicArray<string>(5);
+    const string = 'hello';
+    const vowels = ['a', 'e', 'i', 'o', 'u'];
+
+    for (const char of string) {
+      array.push(char);
+    }
+
+    const withoutVowels = array.filter((char) => !vowels.includes(char));
+    expect(withoutVowels.join('')).toBe('hll');
+    expect(array.join('')).toBe(string);
+
+    const firstThreeChars = array.filter((_, index) => index < 3);
+    expect(firstThreeChars.join('')).toBe('hel');
+  });
+
   it('Array instance must be iterable', () => {
     const array = new DynamicArray<number>(3);
 

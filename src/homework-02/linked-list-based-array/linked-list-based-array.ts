@@ -1,8 +1,8 @@
 import { DoublyLinkedList } from '../../homework-01';
-import type { ArrayElementValue, DynamicArray } from './linked-list-based-array.interface';
+import type { DynamicArray, MapArrayCallback, FilterArrayCallback } from './linked-list-based-array.interface';
 
-export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, Iterable<ArrayElementValue<T>> {
-  #list: DoublyLinkedList<ArrayElementValue<T>[]> = new DoublyLinkedList<ArrayElementValue<T>[]>();
+export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, Iterable<T> {
+  #list: DoublyLinkedList<T[]> = new DoublyLinkedList<T[]>();
 
   #length: number = 0;
 
@@ -26,7 +26,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return newChunk;
   }
 
-  #getLastElementPosition(index: number): [number, ArrayElementValue<T>[]] | null {
+  #getLastElementPosition(index: number): [number, (T | undefined)[]] | null {
     const iterator = this.#list.values();
     const chunkElementIndex = index % this.#chunkSize;
     let chunkCounter = Math.floor(index / this.#chunkSize);
@@ -93,6 +93,32 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return lastChunk[lastElementIndex];
   }
 
+  map<U>(cb: MapArrayCallback<T, U>) {
+    const mappedArray = new DynamicArrayImpl<U>(this.#chunkSize);
+
+    let index = 0;
+    for (const element of this.values()) {
+      mappedArray.push(cb(element, index, this));
+      index += 1;
+    }
+
+    return mappedArray;
+  }
+
+  filter(cb: FilterArrayCallback<T>) {
+    const filteredArray = new DynamicArrayImpl<T>(this.#chunkSize);
+
+    let index = 0;
+    for (const element of this.values()) {
+      if (cb(element, index, this)) {
+        filteredArray.push(element);
+      }
+      index += 1;
+    }
+
+    return filteredArray;
+  }
+
   join(glue: string = ', ') {
     let stringifiedArray = '';
 
@@ -123,13 +149,19 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return this.join();
   }
 
-  *[Symbol.iterator]() {
+  *values() {
     for (const chunk of this.#list.values()) {
       for (let index = 0; index < this.#chunkSize; index += 1) {
-        if (chunk[index] !== undefined) {
-          yield chunk[index];
+        const value = chunk[index];
+
+        if (value !== undefined) {
+          yield value;
         }
       }
     }
+  }
+
+  [Symbol.iterator]() {
+    return this.values();
   }
 }
