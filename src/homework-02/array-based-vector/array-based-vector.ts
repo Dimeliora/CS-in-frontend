@@ -131,7 +131,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
 
       this.#length += values.length;
     } else {
-      const moveDirection = <Direction>Math.sign(values.length - removeCount);
+      const moveDirection: Direction = values.length - removeCount > 0 ? 1 : -1;
       const offset = Math.abs(values.length - removeCount);
 
       for (let index = start; index < start + removeCount; index += 1) {
