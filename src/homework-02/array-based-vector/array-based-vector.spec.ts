@@ -94,6 +94,69 @@ describe('Dynamic vector implementation based on an arrays', () => {
     expect([...vector.splice(-1, 1, 44, 55)]).toEqual([4]);
     expect([...vector]).toEqual([0, 1, 22, 33, 44, 55]);
     expect(vector.length).toBe(6);
+  });
 
+  it('Edge cases of a vector slicing', () => {
+    const vector = new Vector<number>(5);
+
+    for (let i = 0; i < 5; i += 1) {
+      vector.push(i);
+    }
+
+    expect([...vector.splice()]).toEqual([]);
+    expect([...vector]).toEqual([0, 1, 2, 3, 4]);
+
+    expect([...vector.splice(10)]).toEqual([]);
+    expect([...vector]).toEqual([0, 1, 2, 3, 4]);
+
+    expect([...vector.splice(2)]).toEqual([2, 3, 4]);
+    expect([...vector]).toEqual([0, 1]);
+  });
+
+  it('Joining vector elements with delimiter', () => {
+    const vector = new Vector<number>(5);
+
+    for (let i = 0; i < 5; i += 1) {
+      vector.push(i);
+    }
+
+    expect(vector.join()).toBe('0,1,2,3,4');
+    expect(vector.join('=>')).toBe('0=>1=>2=>3=>4');
+  });
+
+  it('Conversion vector to string', () => {
+    const vector = new Vector<number>(5);
+
+    for (let i = 0; i < 5; i += 1) {
+      vector.push(i);
+    }
+
+    expect(vector.toString()).toBe('0,1,2,3,4');
+  });
+
+  it('Mapping vector to another one (without mutation of the original one)', () => {
+    const vector = new Vector<string>(5);
+    const string = 'javascript';
+
+    for (const char of string) {
+      vector.push(char);
+    }
+
+    const upperCased = vector.map((char) => char.toUpperCase());
+    expect(upperCased.join('')).toBe('JAVASCRIPT');
+    expect(vector.join('')).toBe(string);
+  });
+
+  it('Filtering vector (without mutation of the original one)', () => {
+    const vector = new Vector<string>(5);
+    const string = 'javascript';
+
+    for (const char of string) {
+      vector.push(char);
+    }
+
+    const onlyOdds = vector.filter((_, index) => index % 2 !== 0);
+    expect(onlyOdds.join('')).toBe('aacit');
+    expect(vector.join('')).toBe(string);
   });
 });

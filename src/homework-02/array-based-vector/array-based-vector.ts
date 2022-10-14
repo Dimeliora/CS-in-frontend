@@ -1,5 +1,11 @@
 /* eslint-disable no-param-reassign */
-import type { Optional, Direction, Vector } from './array-based-vector.interface';
+import type {
+  Optional,
+  Direction,
+  MapVectorCallback,
+  FilterVectorCallback,
+  Vector,
+} from './array-based-vector.interface';
 
 export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
   #length: number = 0;
@@ -71,7 +77,6 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     for (let index = 0; index < values.length; index += 1) {
       this.#buffer[this.#length + index] = values[index];
     }
-
     this.#length += values.length;
 
     return this;
@@ -103,16 +108,15 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     for (let index = 0; index < values.length; index += 1) {
       this.#buffer[index] = values[index];
     }
-
     this.#length += values.length;
 
     return this;
   }
 
-  splice(start: number, removeCount: number, ...values: T[]) {
-    const removedValues = new VectorImpl<Optional<T>>(this.#capacity);
+  splice(start?: number, removeCount?: number, ...values: T[]) {
+    const removedValues = new VectorImpl<T>(this.#capacity);
 
-    if (start > this.#length) return removedValues;
+    if (start === undefined || start > this.#length) return removedValues;
 
     if (start < 0) start = this.#length + start;
 
@@ -131,7 +135,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
       const offset = Math.abs(values.length - removeCount);
 
       for (let index = start; index < start + removeCount; index += 1) {
-        removedValues.push(this.#buffer[index]);
+        removedValues.push(<T>this.#buffer[index]);
       }
 
       this.#moveBy(moveDirection, offset, start);
@@ -149,7 +153,53 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return removedValues;
   }
 
-  *[Symbol.iterator]() {
+  join(glue: string = ',') {
+    let stringifiedVector = '';
+
+    for (let index = 0; index < this.#length; index += 1) {
+      if (index > 0 && this.#buffer[index] !== undefined) {
+        stringifiedVector += glue;
+      }
+
+      if (this.#buffer[index] !== undefined) {
+        stringifiedVector += String(this.#buffer[index]);
+      }
+    }
+
+    return stringifiedVector;
+  }
+
+  map<U>(cb: MapVectorCallback<T, U>) {
+    const mappedVector = new VectorImpl<U>(this.#capacity);
+
+    let index = 0;
+    for (const element of this.values()) {
+      mappedVector.push(cb(element, index, this));
+      index += 1;
+    }
+
+    return mappedVector;
+  }
+
+  filter(cb: FilterVectorCallback<T>) {
+    const filteredArray = new VectorImpl<T>(this.#capacity);
+
+    let index = 0;
+    for (const element of this.values()) {
+      if (cb(element, index, this)) {
+        filteredArray.push(element);
+      }
+      index += 1;
+    }
+
+    return filteredArray;
+  }
+
+  toString() {
+    return this.join();
+  }
+
+  *values() {
     for (let index = 0; index < this.#length; index += 1) {
       const value = this.#buffer[index];
 
@@ -159,9 +209,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     }
   }
 
-  debug() {
-    console.log(this.#buffer);
-    console.log('Capacity: ', this.#capacity);
-    console.log('Length: ', this.#length);
+  [Symbol.iterator]() {
+    return this.values();
   }
 }
