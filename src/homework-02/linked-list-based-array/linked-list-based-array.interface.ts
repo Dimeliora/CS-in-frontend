@@ -6,10 +6,10 @@ export type FilterArrayCallback<T> = (element: T, index: number, array: DynamicA
 
 export interface DynamicArray<T> {
   length: number;
-  get(index: number): T | undefined;
+  get(index: number): Optional<T>;
   push(value: T): DynamicArray<T>;
-  pop(): T | undefined;
-  shift(): T | undefined;
+  pop(): Optional<T>;
+  shift(): Optional<T>;
   unshift(value: T): DynamicArray<T>;
   map<U>(cb: MapArrayCallback<T, U>): DynamicArray<U>;
   filter(cb: FilterArrayCallback<T>): DynamicArray<T>;
