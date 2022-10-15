@@ -21,6 +21,7 @@ export interface DoublyLinkedList<T> {
   insertAfter(cb: Predicate<T>, newValue: T): boolean;
   find(cb: Predicate<T>): Nullable<DoublyLinkedListNode<T>>;
   remove(cb: Predicate<T>): Nullable<DoublyLinkedListNode<T>>;
+  replace(cb: Predicate<T>, newValue: T): boolean;
   reverse(): DoublyLinkedList<T>;
   values(): IterableIterator<T>;
   reversedValues(): IterableIterator<T>;

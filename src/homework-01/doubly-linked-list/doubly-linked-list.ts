@@ -122,56 +122,6 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return firstNode;
   }
 
-  insertBefore(cb: Predicate<T>, newValue: T) {
-    const iterator = this.#iterateListNodes();
-    let currentNode = iterator.next().value;
-
-    while (currentNode) {
-      if (cb(currentNode?.value)) {
-        if (currentNode.prev === null) {
-          this.unshift(newValue);
-          return true;
-        }
-
-        const newNode = new DoublyLinkedListNodeImpl(newValue);
-        newNode.next = currentNode;
-        newNode.prev = currentNode.prev;
-        newNode.prev.next = newNode;
-        currentNode.prev = newNode;
-        return true;
-      }
-
-      currentNode = iterator.next().value;
-    }
-
-    return false;
-  }
-
-  insertAfter(cb: Predicate<T>, newValue: T) {
-    const iterator = this.#iterateListNodes();
-    let currentNode = iterator.next().value;
-
-    while (currentNode) {
-      if (cb(currentNode?.value)) {
-        if (currentNode.next === null) {
-          this.push(newValue);
-          return true;
-        }
-
-        const newNode = new DoublyLinkedListNodeImpl(newValue);
-        newNode.next = currentNode.next;
-        currentNode.next.prev = newNode;
-        newNode.prev = currentNode;
-        currentNode.next = newNode;
-        return true;
-      }
-
-      currentNode = iterator.next().value;
-    }
-
-    return false;
-  }
-
   find(cb: Predicate<T>) {
     const iterator = this.#iterateListNodes();
     let currentNode = iterator.next().value;
@@ -187,28 +137,79 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return null;
   }
 
+  insertBefore(cb: Predicate<T>, newValue: T) {
+    const nodeBefore = this.find(cb);
+
+    if (!nodeBefore) {
+      return false;
+    }
+
+    if (nodeBefore.prev === null) {
+      this.unshift(newValue);
+
+      return true;
+    }
+
+    const newNode = new DoublyLinkedListNodeImpl(newValue);
+    newNode.next = nodeBefore;
+    newNode.prev = nodeBefore.prev;
+    newNode.prev.next = newNode;
+    nodeBefore.prev = newNode;
+
+    return true;
+  }
+
+  insertAfter(cb: Predicate<T>, newValue: T) {
+    const nodeAfter = this.find(cb);
+
+    if (!nodeAfter) {
+      return false;
+    }
+
+    if (nodeAfter.next === null) {
+      this.push(newValue);
+      return true;
+    }
+
+    const newNode = new DoublyLinkedListNodeImpl(newValue);
+    newNode.next = nodeAfter.next;
+    nodeAfter.next.prev = newNode;
+    newNode.prev = nodeAfter;
+    nodeAfter.next = newNode;
+
+    return true;
+  }
+
   remove(cb: Predicate<T>) {
-    const iterator = this.#iterateListNodes();
-    let currentNode = iterator.next().value;
+    const nodeToRemove = this.find(cb);
 
-    while (currentNode) {
-      if (cb(currentNode.value)) {
-        if (currentNode.prev === null) {
-          return this.shift();
-        }
-
-        if (currentNode.next === null) {
-          return this.pop();
-        }
-
-        [currentNode.next.prev, currentNode.prev.next] = [currentNode.prev, currentNode.next];
-        return currentNode;
+    if (nodeToRemove) {
+      if (nodeToRemove.prev === null) {
+        return this.shift();
       }
 
-      currentNode = iterator.next().value;
+      if (nodeToRemove.next === null) {
+        return this.pop();
+      }
+
+      [nodeToRemove.next.prev, nodeToRemove.prev.next] = [nodeToRemove.prev, nodeToRemove.next];
+
+      return nodeToRemove;
     }
 
     return null;
+  }
+
+  replace(cb: Predicate<T>, newValue: T) {
+    const nodeToReplace = this.find(cb);
+
+    if (!nodeToReplace) {
+      return false;
+    }
+
+    nodeToReplace.value = newValue;
+
+    return true;
   }
 
   reverse(): this {

@@ -135,6 +135,14 @@ describe('Doubly linked list implementation', () => {
     expect(list.remove((value) => value === 42)).toBeNull();
   });
 
+  it('Replacing value within list', () => {
+    const list = new DoublyLinkedListImpl<number>([0, 1, 2, 3, 4]);
+
+    expect(list.replace((value) => value === 3, 33)).toBe(true);
+    expect(list.tail?.prev?.value).toBe(33);
+    expect(list.replace((value) => value === 10, 100)).toBe(false);
+  });
+
   it('List instance must be iterable', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
 
