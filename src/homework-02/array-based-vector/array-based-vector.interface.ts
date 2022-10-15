@@ -1,4 +1,4 @@
-export type Optional<T> = T | undefined;
+import { Optional } from '../../utils/common.interface';
 
 export type Direction = 1 | -1;
 
@@ -16,7 +16,7 @@ export interface Vector<T> {
   splice(start?: number, removeCount?: number, ...values: T[]): Vector<T>;
   join(glue?: string): string;
   map<U>(cb: MapVectorCallback<T, U>): Vector<U>;
-  filter(cb: FilterVectorCallback<T>): any;
+  filter(cb: FilterVectorCallback<T>): Vector<T>;
   toString(): string;
-  values(): Iterator<T>;
+  values(): IterableIterator<T>;
 }

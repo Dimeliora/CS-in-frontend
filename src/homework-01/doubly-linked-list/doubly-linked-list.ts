@@ -1,10 +1,11 @@
+import { Nullable } from '../../utils/common.interface';
 import DoublyLinkedListNodeImpl from './doubly-linked-list-node';
 import type { DoublyLinkedList, DoublyLinkedListNode, Predicate } from './doubly-linked-list.interface';
 
 export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedList<T>, Iterable<T> {
-  #head: DoublyLinkedListNode<T> | null = null;
+  #head: Nullable<DoublyLinkedListNode<T>> = null;
 
-  #tail: DoublyLinkedListNode<T> | null = null;
+  #tail: Nullable<DoublyLinkedListNode<T>> = null;
 
   constructor(iterable?: Iterable<T>) {
     // eslint-disable-next-line eqeqeq

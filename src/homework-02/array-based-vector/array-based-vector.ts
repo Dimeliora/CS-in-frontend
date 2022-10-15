@@ -1,11 +1,6 @@
 /* eslint-disable no-param-reassign */
-import type {
-  Optional,
-  Direction,
-  MapVectorCallback,
-  FilterVectorCallback,
-  Vector,
-} from './array-based-vector.interface';
+import { Optional } from '../../utils/common.interface';
+import type { Direction, MapVectorCallback, FilterVectorCallback, Vector } from './array-based-vector.interface';
 
 export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
   #length: number = 0;

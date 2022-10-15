@@ -1,10 +1,6 @@
+import { Optional } from '../../utils/common.interface';
 import { DoublyLinkedList } from '../../homework-01';
-import type {
-  DynamicArray,
-  Optional,
-  MapArrayCallback,
-  FilterArrayCallback,
-} from './linked-list-based-array.interface';
+import type { DynamicArray, MapArrayCallback, FilterArrayCallback } from './linked-list-based-array.interface';
 
 export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, Iterable<T> {
   #list: DoublyLinkedList<Optional<T>[]> = new DoublyLinkedList<Optional<T>[]>();

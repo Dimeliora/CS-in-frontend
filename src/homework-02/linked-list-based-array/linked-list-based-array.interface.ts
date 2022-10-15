@@ -1,4 +1,4 @@
-export type Optional<T> = T | undefined;
+import { Optional } from '../../utils/common.interface';
 
 export type MapArrayCallback<T, U> = (element: T, index: number, array: DynamicArray<T>) => U;
 
@@ -14,6 +14,6 @@ export interface DynamicArray<T> {
   map<U>(cb: MapArrayCallback<T, U>): DynamicArray<U>;
   filter(cb: FilterArrayCallback<T>): DynamicArray<T>;
   join(glue?: string): string;
-  values(): Iterator<T>;
+  values(): IterableIterator<T>;
   toString(): string;
 }

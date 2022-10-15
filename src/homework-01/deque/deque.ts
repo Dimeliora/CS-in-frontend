@@ -1,5 +1,5 @@
 import DoublyLinkedList from '../doubly-linked-list/doubly-linked-list';
-import type Deque from './deque.interface';
+import type { Deque } from './deque.interface';
 
 export default class DequeImpl<T = unknown> implements Deque<T> {
   #list: DoublyLinkedList<T> = new DoublyLinkedList<T>();
