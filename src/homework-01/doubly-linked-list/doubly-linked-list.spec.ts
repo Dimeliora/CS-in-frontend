@@ -13,15 +13,6 @@ describe('Doubly linked list implementation', () => {
     expect(() => new DoublyLinkedListImpl(123)).toThrowError('Object is not iterable');
   });
 
-  it('Check if list is empty', () => {
-    const list = new DoublyLinkedListImpl<number>();
-
-    expect(list.isEmpty).toBe(true);
-
-    list.push(0);
-    expect(list.isEmpty).toBe(false);
-  });
-
   it('List clean up', () => {
     const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
 

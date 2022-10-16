@@ -1,15 +1,15 @@
 /* eslint-disable no-param-reassign */
-import { Optional } from '../../utils/common.interface';
-import type { Direction, MapVectorCallback, FilterVectorCallback, Vector } from './array-based-vector.interface';
+import type { Optional } from '../../utils/common.types';
+import type { Direction } from './array-based-vector.interface';
 
-export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
+export default class VectorImpl<T> implements Iterable<T> {
   #length: number = 0;
+
+  #capacityGrowCoeff: number = 2;
 
   #capacity: number;
 
   #buffer: Optional<T>[];
-
-  #capacityGrowCoeff: number = 2;
 
   constructor(size: number = 10) {
     if (size <= 0 || !Number.isInteger(size)) {
@@ -20,11 +20,11 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     this.#buffer = Array<Optional<T>>(size);
   }
 
-  get length() {
+  get length(): number {
     return this.#length;
   }
 
-  #extendBuffer(multiplier: number = 1) {
+  #extendBuffer(multiplier: number = 1): void {
     this.#capacity *= this.#capacityGrowCoeff * multiplier;
     const extendedBuffer = Array<Optional<T>>(this.#capacity);
 
@@ -37,14 +37,14 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     this.#buffer = extendedBuffer;
   }
 
-  #checkoutBufferExtension(requiredLength: number) {
+  #checkoutBufferExtension(requiredLength: number): void {
     if (this.#capacity < this.#length + requiredLength) {
       const multiplier = Math.floor((this.#length + requiredLength - 1) / this.#capacity);
       this.#extendBuffer(multiplier);
     }
   }
 
-  #moveBy(direction: Direction, step: number, start: number = 0) {
+  #moveBy(direction: Direction, step: number, start: number = 0): void {
     if (step === 0) return;
 
     const isForward = direction === 1;
@@ -62,7 +62,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     }
   }
 
-  get(index: number) {
+  get(index: number): Optional<T> {
     return this.#buffer[index];
   }
 
@@ -77,7 +77,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return this;
   }
 
-  pop() {
+  pop(): Optional<T> {
     const lastValue = this.#buffer[this.#length - 1];
     if (lastValue === undefined) return lastValue;
 
@@ -87,7 +87,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return lastValue;
   }
 
-  shift() {
+  shift(): Optional<T> {
     const [firstValue] = this.#buffer;
     this.#moveBy(-1, 1);
     this.#length -= 1;
@@ -108,7 +108,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return this;
   }
 
-  splice(start?: number, removeCount?: number, ...values: T[]) {
+  splice(start?: number, removeCount?: number, ...values: T[]): VectorImpl<T> {
     const removedValues = new VectorImpl<T>(this.#capacity);
 
     if (start === undefined || start > this.#length) return removedValues;
@@ -148,7 +148,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return removedValues;
   }
 
-  join(glue: string = ',') {
+  join(glue: string = ','): string {
     let stringifiedVector = '';
 
     for (let index = 0; index < this.#length; index += 1) {
@@ -164,7 +164,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return stringifiedVector;
   }
 
-  map<U>(cb: MapVectorCallback<T, U>) {
+  map<U>(cb: (element: T, index: number, vector: this) => U): VectorImpl<U> {
     const mappedVector = new VectorImpl<U>(this.#capacity);
 
     let index = 0;
@@ -176,7 +176,7 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return mappedVector;
   }
 
-  filter(cb: FilterVectorCallback<T>) {
+  filter(cb: (element: T, index: number, vector: this) => boolean): VectorImpl<T> {
     const filteredArray = new VectorImpl<T>(this.#capacity);
 
     let index = 0;
@@ -190,11 +190,11 @@ export default class VectorImpl<T> implements Vector<T>, Iterable<T> {
     return filteredArray;
   }
 
-  toString() {
+  toString(): string {
     return this.join();
   }
 
-  *values() {
+  *values(): Generator<T> {
     for (let index = 0; index < this.#length; index += 1) {
       const value = this.#buffer[index];
 

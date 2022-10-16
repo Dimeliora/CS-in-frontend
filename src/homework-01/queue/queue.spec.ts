@@ -8,7 +8,6 @@ describe('Queue implementation', () => {
     expect(queue.peek()).toBe(0);
     queue.enqueue(1);
     expect(queue.peek()).toBe(0);
-    expect(queue.isEmpty).toBe(false);
   });
 
   it('Removing value from queue', () => {
@@ -20,7 +19,6 @@ describe('Queue implementation', () => {
     expect(queue.peek()).toBe(1);
     expect(queue.dequeue()).toBe(1);
     expect(queue.peek()).toBeNull();
-    expect(queue.isEmpty).toBe(true);
   });
 
   it('Removing value from an empty queue', () => {

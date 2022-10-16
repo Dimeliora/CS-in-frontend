@@ -1,7 +1,7 @@
 import { DoublyLinkedList } from '../../homework-01';
-import type { HashTable } from './hash-table.interface';
+import type { Optional } from '../../utils/common.types';
 
-export default class HashTableImpl<T> implements HashTable<T> {
+export default class HashTableImpl<T> {
   #hashArray: DoublyLinkedList<[string, T]>[] = [];
 
   #keysCount: number = 0;
@@ -23,11 +23,11 @@ export default class HashTableImpl<T> implements HashTable<T> {
     this.#prepareHashArray();
   }
 
-  get #fillRate() {
+  get #fillRate(): number {
     return this.#keysCount / this.#hashArraySize;
   }
 
-  #prepareHashArray() {
+  #prepareHashArray(): void {
     this.#hashArray = Array<DoublyLinkedList<[string, T]>>(this.#hashArraySize);
 
     for (let index = 0; index < this.#hashArray.length; index += 1) {
@@ -35,7 +35,7 @@ export default class HashTableImpl<T> implements HashTable<T> {
     }
   }
 
-  #hashKeyToIndex(key: string) {
+  #hashKeyToIndex(key: string): number {
     const keyChars = [...key];
     let keyToNumberMap = 0;
 
@@ -47,7 +47,7 @@ export default class HashTableImpl<T> implements HashTable<T> {
     return keyToNumberMap;
   }
 
-  #checkoutTableRehashing() {
+  #checkoutTableRehashing(): void {
     const prevHashArray = this.#hashArray;
     this.#hashArraySize *= this.#hashArrayExtendCoeff;
     this.#keysCount = 0;
@@ -69,7 +69,7 @@ export default class HashTableImpl<T> implements HashTable<T> {
     return [hashArrayList, stringifiedKey];
   }
 
-  set(key: any, value: T) {
+  set(key: unknown, value: T): this {
     if (this.#fillRate > this.#maxFillRate) {
       this.#checkoutTableRehashing();
     }
@@ -87,14 +87,14 @@ export default class HashTableImpl<T> implements HashTable<T> {
     return this;
   }
 
-  get(key: any) {
+  get(key: unknown): Optional<T> {
     const [hashArrayList, stringifiedKey] = this.#getHashArrayList(key);
     const entry = hashArrayList.find(([entryKey]) => entryKey === stringifiedKey);
 
     return entry?.value[1];
   }
 
-  remove(key: any) {
+  remove(key: unknown): boolean {
     const [hashArrayList, stringifiedKey] = this.#getHashArrayList(key);
     const removedEntry = hashArrayList.remove(([entryKey]) => entryKey === stringifiedKey);
 
@@ -106,19 +106,19 @@ export default class HashTableImpl<T> implements HashTable<T> {
     return false;
   }
 
-  *entries() {
+  *entries(): Generator<[string, T]> {
     for (const list of this.#hashArray) {
       yield* list.values();
     }
   }
 
-  *keys() {
+  *keys(): Generator<string> {
     for (const [key] of this.entries()) {
       yield key;
     }
   }
 
-  *values() {
+  *values(): Generator<T> {
     for (const [, value] of this.entries()) {
       yield value;
     }

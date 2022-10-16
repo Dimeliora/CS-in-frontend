@@ -1,11 +1,9 @@
-import { Nullable } from '../../utils/common.interface';
+import type { Nullable } from '../../utils/common.types';
 
-import type { DoublyLinkedListNode } from './doubly-linked-list.interface';
+export default class DoublyLinkedListNodeImpl<T = unknown> {
+  prev: Nullable<DoublyLinkedListNodeImpl<T>> = null;
 
-export default class DoublyLinkedListNodeImpl<T = unknown> implements DoublyLinkedListNode<T> {
-  prev: Nullable<DoublyLinkedListNode<T>> = null;
-
-  next: Nullable<DoublyLinkedListNode<T>> = null;
+  next: Nullable<DoublyLinkedListNodeImpl<T>> = null;
 
   constructor(public value: T) {}
 }

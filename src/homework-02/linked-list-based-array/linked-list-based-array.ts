@@ -1,8 +1,7 @@
-import { Optional } from '../../utils/common.interface';
+import { Optional } from '../../utils/common.types';
 import { DoublyLinkedList } from '../../homework-01';
-import type { DynamicArray, MapArrayCallback, FilterArrayCallback } from './linked-list-based-array.interface';
 
-export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, Iterable<T> {
+export default class DynamicArrayImpl<T = unknown> implements Iterable<T> {
   #list: DoublyLinkedList<Optional<T>[]> = new DoublyLinkedList<Optional<T>[]>();
 
   #length: number = 0;
@@ -17,7 +16,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     this.#chunkSize = size;
   }
 
-  get length() {
+  get length(): number {
     return this.#length;
   }
 
@@ -45,7 +44,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return [chunkElementIndex, currentChunk];
   }
 
-  get(index: number) {
+  get(index: number): Optional<T> {
     const elementPosition = this.#getElementPosition(index);
     if (elementPosition === null) {
       return undefined;
@@ -76,7 +75,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return this;
   }
 
-  pop() {
+  pop(): Optional<T> {
     const lastElementPosition = this.#getElementPosition(this.#length - 1);
     if (lastElementPosition === null) {
       return undefined;
@@ -94,7 +93,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return lastElement;
   }
 
-  shift() {
+  shift(): Optional<T> {
     const iterator = this.#list.values();
     let currentChunk = iterator.next().value;
     let firstElement: Optional<T>;
@@ -138,7 +137,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return firstElement;
   }
 
-  unshift(value: T) {
+  unshift(value: T): this {
     const iterator = this.#list.reversedValues();
     let currentChunk = iterator.next().value;
     let prevChunk: ReturnType<typeof iterator.next>['value'];
@@ -177,7 +176,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return this;
   }
 
-  map<U>(cb: MapArrayCallback<T, U>) {
+  map<U>(cb: (element: T, index: number, array: this) => U): DynamicArrayImpl<U> {
     const mappedArray = new DynamicArrayImpl<U>(this.#chunkSize);
 
     let index = 0;
@@ -189,7 +188,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return mappedArray;
   }
 
-  filter(cb: FilterArrayCallback<T>) {
+  filter(cb: (element: T, index: number, array: this) => boolean): DynamicArrayImpl<T> {
     const filteredArray = new DynamicArrayImpl<T>(this.#chunkSize);
 
     let index = 0;
@@ -203,7 +202,7 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return filteredArray;
   }
 
-  join(glue: string = ',') {
+  join(glue: string = ','): string {
     let stringifiedArray = '';
 
     for (const chunk of this.#list.values()) {
@@ -229,11 +228,11 @@ export default class DynamicArrayImpl<T = unknown> implements DynamicArray<T>, I
     return stringifiedArray;
   }
 
-  toString() {
+  toString(): string {
     return this.join();
   }
 
-  *values() {
+  *values(): Generator<T> {
     for (const chunk of this.#list.values()) {
       for (let index = 0; index < this.#chunkSize; index += 1) {
         const value = chunk[index];

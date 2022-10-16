@@ -1,11 +1,10 @@
-import { Nullable } from '../../utils/common.interface';
+import type { Nullable } from '../../utils/common.types';
 import DoublyLinkedListNodeImpl from './doubly-linked-list-node';
-import type { DoublyLinkedList, DoublyLinkedListNode, Predicate } from './doubly-linked-list.interface';
 
-export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedList<T>, Iterable<T> {
-  #head: Nullable<DoublyLinkedListNode<T>> = null;
+export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
+  #head: Nullable<DoublyLinkedListNodeImpl<T>> = null;
 
-  #tail: Nullable<DoublyLinkedListNode<T>> = null;
+  #tail: Nullable<DoublyLinkedListNodeImpl<T>> = null;
 
   constructor(iterable?: Iterable<T>) {
     // eslint-disable-next-line eqeqeq
@@ -22,7 +21,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     }
   }
 
-  *#iterateListNodes(direction: 'forward' | 'backward' = 'forward') {
+  *#iterateListNodes(direction: 'forward' | 'backward' = 'forward'): Generator<DoublyLinkedListNodeImpl<T>> {
     let currentNode = direction === 'forward' ? this.#head : this.#tail;
 
     while (currentNode !== null) {
@@ -33,18 +32,12 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return null;
   }
 
-  get head() {
-    const nodeClone = this.#head ? { ...this.#head } : null;
-    return Object.freeze(nodeClone);
+  get head(): Nullable<DoublyLinkedListNodeImpl<T>> {
+    return this.#head;
   }
 
-  get tail() {
-    const nodeClone = this.#tail ? { ...this.#tail } : null;
-    return Object.freeze(nodeClone);
-  }
-
-  get isEmpty() {
-    return this.#head === null;
+  get tail(): Nullable<DoublyLinkedListNodeImpl<T>> {
+    return this.#tail;
   }
 
   clean(): this {
@@ -71,7 +64,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return this;
   }
 
-  pop() {
+  pop(): Nullable<DoublyLinkedListNodeImpl<T>> {
     if (!this.#tail) {
       return null;
     }
@@ -105,7 +98,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return this;
   }
 
-  shift() {
+  shift(): Nullable<DoublyLinkedListNodeImpl<T>> {
     if (!this.#head) {
       return null;
     }
@@ -122,22 +115,17 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return firstNode;
   }
 
-  find(cb: Predicate<T>) {
-    const iterator = this.#iterateListNodes();
-    let currentNode = iterator.next().value;
-
-    while (currentNode) {
+  find(cb: (value: T) => boolean): Nullable<DoublyLinkedListNodeImpl<T>> {
+    for (const currentNode of this.#iterateListNodes()) {
       if (cb(currentNode.value)) {
         return currentNode;
       }
-
-      currentNode = iterator.next().value;
     }
 
     return null;
   }
 
-  insertBefore(cb: Predicate<T>, newValue: T) {
+  insertBefore(cb: (value: T) => boolean, newValue: T): boolean {
     const nodeBefore = this.find(cb);
 
     if (!nodeBefore) {
@@ -159,7 +147,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return true;
   }
 
-  insertAfter(cb: Predicate<T>, newValue: T) {
+  insertAfter(cb: (value: T) => boolean, newValue: T): boolean {
     const nodeAfter = this.find(cb);
 
     if (!nodeAfter) {
@@ -180,7 +168,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return true;
   }
 
-  remove(cb: Predicate<T>) {
+  remove(cb: (value: T) => boolean): Nullable<DoublyLinkedListNodeImpl<T>> {
     const nodeToRemove = this.find(cb);
 
     if (nodeToRemove) {
@@ -200,7 +188,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return null;
   }
 
-  replace(cb: Predicate<T>, newValue: T) {
+  replace(cb: (value: T) => boolean, newValue: T): boolean {
     const nodeToReplace = this.find(cb);
 
     if (!nodeToReplace) {
@@ -223,10 +211,8 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     this.#tail = this.#head;
     this.#head = currentNode;
 
-    let prevNode: DoublyLinkedListNode<T> | null;
-
     while (currentNode) {
-      prevNode = iterator.next().value;
+      const prevNode = iterator.next().value;
 
       if (currentNode) {
         currentNode.prev = currentNode.next;
@@ -239,19 +225,19 @@ export default class DoublyLinkedListImpl<T = unknown> implements DoublyLinkedLi
     return this;
   }
 
-  *values() {
+  *values(): Generator<T> {
     for (const node of this.#iterateListNodes()) {
       yield node.value;
     }
   }
 
-  *reversedValues() {
+  *reversedValues(): Generator<T> {
     for (const node of this.#iterateListNodes('backward')) {
       yield node.value;
     }
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Generator<T> {
     return this.values();
   }
 }

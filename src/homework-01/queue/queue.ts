@@ -1,12 +1,8 @@
 import DoublyLinkedList from '../doubly-linked-list/doubly-linked-list';
-import type Queue from './queue.interface';
+import type { Nullable } from '../../utils/common.types';
 
-export default class QueueImpl<T = unknown> implements Queue<T> {
+export default class QueueImpl<T = unknown> {
   #list: DoublyLinkedList<T> = new DoublyLinkedList<T>();
-
-  get isEmpty() {
-    return this.#list.isEmpty;
-  }
 
   enqueue(value: T): this {
     this.#list.unshift(value);
@@ -14,7 +10,7 @@ export default class QueueImpl<T = unknown> implements Queue<T> {
     return this;
   }
 
-  dequeue() {
+  dequeue(): T {
     const firstNode = this.#list.pop();
 
     if (firstNode === null) {
@@ -24,7 +20,7 @@ export default class QueueImpl<T = unknown> implements Queue<T> {
     return firstNode.value;
   }
 
-  peek() {
+  peek(): Nullable<T> {
     return this.#list.tail?.value ?? null;
   }
 }

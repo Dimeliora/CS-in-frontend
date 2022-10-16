@@ -1,6 +1,6 @@
-import type Stack from './stack.interface';
+import type { Nullable } from '../../utils/common.types';
 
-export default class StackImpl<T = unknown> implements Stack<T> {
+export default class StackImpl<T = unknown> {
   #stack: T[];
 
   #stackPointer: number = -1;
@@ -13,11 +13,11 @@ export default class StackImpl<T = unknown> implements Stack<T> {
     this.#stack = Array(maxStackSize);
   }
 
-  get isEmpty() {
+  get isEmpty(): boolean {
     return this.#stackPointer === -1;
   }
 
-  get isFull() {
+  get isFull(): boolean {
     return this.#stack.length === this.#stackPointer + 1;
   }
 
@@ -32,7 +32,7 @@ export default class StackImpl<T = unknown> implements Stack<T> {
     return this;
   }
 
-  pop() {
+  pop(): T {
     if (this.isEmpty) {
       throw new Error('Stack is empty');
     }
@@ -43,7 +43,7 @@ export default class StackImpl<T = unknown> implements Stack<T> {
     return peekValue;
   }
 
-  peek() {
+  peek(): Nullable<T> {
     if (this.isEmpty) {
       return null;
     }

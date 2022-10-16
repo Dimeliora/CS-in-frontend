@@ -10,7 +10,6 @@ describe('Deque implementation', () => {
     deque.insertLeft(1);
     expect(deque.peekLeft()).toBe(1);
     expect(deque.peekRight()).toBe(0);
-    expect(deque.isEmpty).toBe(false);
   });
 
   it('Inserting value to the right side of deque', () => {
@@ -33,7 +32,6 @@ describe('Deque implementation', () => {
     expect(deque.peekLeft()).toBe(0);
     expect(deque.removeLeft()).toBe(0);
     expect(deque.peekLeft()).toBeNull();
-    expect(deque.isEmpty).toBe(true);
   });
 
   it('Removing value from the right side of deque', () => {
@@ -45,7 +43,6 @@ describe('Deque implementation', () => {
     expect(deque.peekLeft()).toBe(1);
     expect(deque.removeRight()).toBe(1);
     expect(deque.peekLeft()).toBeNull();
-    expect(deque.isEmpty).toBe(true);
   });
 
   it('Removing value from an empty deque', () => {
