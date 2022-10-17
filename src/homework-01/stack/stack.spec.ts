@@ -39,12 +39,4 @@ describe('Stack implementation based on array', () => {
     stack.push(2);
     expect(() => stack.push(3)).toThrowError('Maximum stack size exceeded');
   });
-
-  it('Popping value from an empty stack', () => {
-    const stack = new Stack<number>(1);
-
-    stack.push(0);
-    stack.pop();
-    expect(() => stack.pop()).toThrowError('Stack is empty');
-  });
 });

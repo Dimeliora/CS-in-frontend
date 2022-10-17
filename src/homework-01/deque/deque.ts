@@ -1,7 +1,7 @@
 import DoublyLinkedList from '../doubly-linked-list/doubly-linked-list';
 import type { Nullable } from '../../utils/common.types';
 
-export default class DequeImpl<T = unknown> {
+export default class Deque<T = unknown> {
   #list: DoublyLinkedList<T> = new DoublyLinkedList<T>();
 
   insertLeft(value: T): this {
@@ -10,14 +10,10 @@ export default class DequeImpl<T = unknown> {
     return this;
   }
 
-  removeLeft(): T {
+  removeLeft(): Nullable<T> {
     const firstNode = this.#list.shift();
 
-    if (firstNode === null) {
-      throw new Error('Deque is empty');
-    }
-
-    return firstNode.value;
+    return firstNode && firstNode.value;
   }
 
   insertRight(value: T): this {
@@ -26,21 +22,17 @@ export default class DequeImpl<T = unknown> {
     return this;
   }
 
-  removeRight(): T {
+  removeRight(): Nullable<T> {
     const lastNode = this.#list.pop();
 
-    if (lastNode === null) {
-      throw new Error('Deque is empty');
-    }
-
-    return lastNode.value;
+    return lastNode && lastNode.value;
   }
 
   peekLeft(): Nullable<T> {
-    return this.#list.head?.value ?? null;
+    return this.#list.head && this.#list.head.value;
   }
 
   peekRight(): Nullable<T> {
-    return this.#list.tail?.value ?? null;
+    return this.#list.tail && this.#list.tail.value;
   }
 }

@@ -1,7 +1,7 @@
 import { Optional } from '../../utils/common.types';
 import { DoublyLinkedList } from '../../homework-01';
 
-export default class DynamicArrayImpl<T = unknown> implements Iterable<T> {
+export default class DynamicArray<T = unknown> implements Iterable<T> {
   #list: DoublyLinkedList<Optional<T>[]> = new DoublyLinkedList<Optional<T>[]>();
 
   #length: number = 0;
@@ -176,8 +176,8 @@ export default class DynamicArrayImpl<T = unknown> implements Iterable<T> {
     return this;
   }
 
-  map<U>(cb: (element: T, index: number, array: this) => U): DynamicArrayImpl<U> {
-    const mappedArray = new DynamicArrayImpl<U>(this.#chunkSize);
+  map<U>(cb: (element: T, index: number, array: this) => U): DynamicArray<U> {
+    const mappedArray = new DynamicArray<U>(this.#chunkSize);
 
     let index = 0;
     for (const element of this.values()) {
@@ -188,8 +188,8 @@ export default class DynamicArrayImpl<T = unknown> implements Iterable<T> {
     return mappedArray;
   }
 
-  filter(cb: (element: T, index: number, array: this) => boolean): DynamicArrayImpl<T> {
-    const filteredArray = new DynamicArrayImpl<T>(this.#chunkSize);
+  filter(cb: (element: T, index: number, array: this) => boolean): DynamicArray<T> {
+    const filteredArray = new DynamicArray<T>(this.#chunkSize);
 
     let index = 0;
     for (const element of this.values()) {

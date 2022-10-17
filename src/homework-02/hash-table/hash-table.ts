@@ -1,7 +1,7 @@
 import { DoublyLinkedList } from '../../homework-01';
 import type { Optional } from '../../utils/common.types';
 
-export default class HashTableImpl<T> {
+export default class HashTable<T> {
   #hashArray: DoublyLinkedList<[string, T]>[] = [];
 
   #keysCount: number = 0;

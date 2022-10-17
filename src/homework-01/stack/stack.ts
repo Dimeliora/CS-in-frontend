@@ -1,6 +1,6 @@
 import type { Nullable } from '../../utils/common.types';
 
-export default class StackImpl<T = unknown> {
+export default class Stack<T = unknown> {
   #stack: T[];
 
   #stackPointer: number = -1;
@@ -32,13 +32,11 @@ export default class StackImpl<T = unknown> {
     return this;
   }
 
-  pop(): T {
-    if (this.isEmpty) {
-      throw new Error('Stack is empty');
+  pop(): Nullable<T> {
+    const peekValue = this.peek();
+    if (peekValue !== null) {
+      this.#stackPointer -= 1;
     }
-
-    const peekValue = this.#stack[this.#stackPointer];
-    this.#stackPointer -= 1;
 
     return peekValue;
   }

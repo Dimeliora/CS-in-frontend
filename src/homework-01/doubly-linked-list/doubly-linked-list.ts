@@ -1,14 +1,13 @@
 import type { Nullable } from '../../utils/common.types';
-import DoublyLinkedListNodeImpl from './doubly-linked-list-node';
+import DoublyLinkedListNode from './doubly-linked-list-node';
 
-export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
-  #head: Nullable<DoublyLinkedListNodeImpl<T>> = null;
+export default class DoublyLinkedList<T = unknown> implements Iterable<T> {
+  #head: Nullable<DoublyLinkedListNode<T>> = null;
 
-  #tail: Nullable<DoublyLinkedListNodeImpl<T>> = null;
+  #tail: Nullable<DoublyLinkedListNode<T>> = null;
 
   constructor(iterable?: Iterable<T>) {
-    // eslint-disable-next-line eqeqeq
-    if (iterable == undefined) {
+    if (iterable == null) {
       return;
     }
 
@@ -21,7 +20,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     }
   }
 
-  *#iterateListNodes(direction: 'forward' | 'backward' = 'forward'): Generator<DoublyLinkedListNodeImpl<T>> {
+  *#iterateListNodes(direction: 'forward' | 'backward' = 'forward'): Generator<DoublyLinkedListNode<T>> {
     let currentNode = direction === 'forward' ? this.#head : this.#tail;
 
     while (currentNode !== null) {
@@ -32,11 +31,11 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     return null;
   }
 
-  get head(): Nullable<DoublyLinkedListNodeImpl<T>> {
+  get head(): Nullable<DoublyLinkedListNode<T>> {
     return this.#head;
   }
 
-  get tail(): Nullable<DoublyLinkedListNodeImpl<T>> {
+  get tail(): Nullable<DoublyLinkedListNode<T>> {
     return this.#tail;
   }
 
@@ -48,7 +47,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
   }
 
   push(value: T): this {
-    const newNode = new DoublyLinkedListNodeImpl(value);
+    const newNode = new DoublyLinkedListNode(value);
 
     if (!this.#head) {
       this.#head = newNode;
@@ -64,7 +63,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     return this;
   }
 
-  pop(): Nullable<DoublyLinkedListNodeImpl<T>> {
+  pop(): Nullable<DoublyLinkedListNode<T>> {
     if (!this.#tail) {
       return null;
     }
@@ -82,7 +81,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
   }
 
   unshift(value: T): this {
-    const newNode = new DoublyLinkedListNodeImpl(value);
+    const newNode = new DoublyLinkedListNode(value);
 
     if (!this.#tail) {
       this.#tail = newNode;
@@ -98,7 +97,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     return this;
   }
 
-  shift(): Nullable<DoublyLinkedListNodeImpl<T>> {
+  shift(): Nullable<DoublyLinkedListNode<T>> {
     if (!this.#head) {
       return null;
     }
@@ -115,7 +114,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     return firstNode;
   }
 
-  find(cb: (value: T) => boolean): Nullable<DoublyLinkedListNodeImpl<T>> {
+  find(cb: (value: T) => boolean): Nullable<DoublyLinkedListNode<T>> {
     for (const currentNode of this.#iterateListNodes()) {
       if (cb(currentNode.value)) {
         return currentNode;
@@ -138,7 +137,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
       return true;
     }
 
-    const newNode = new DoublyLinkedListNodeImpl(newValue);
+    const newNode = new DoublyLinkedListNode(newValue);
     newNode.next = nodeBefore;
     newNode.prev = nodeBefore.prev;
     newNode.prev.next = newNode;
@@ -159,7 +158,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
       return true;
     }
 
-    const newNode = new DoublyLinkedListNodeImpl(newValue);
+    const newNode = new DoublyLinkedListNode(newValue);
     newNode.next = nodeAfter.next;
     nodeAfter.next.prev = newNode;
     newNode.prev = nodeAfter;
@@ -168,7 +167,7 @@ export default class DoublyLinkedListImpl<T = unknown> implements Iterable<T> {
     return true;
   }
 
-  remove(cb: (value: T) => boolean): Nullable<DoublyLinkedListNodeImpl<T>> {
+  remove(cb: (value: T) => boolean): Nullable<DoublyLinkedListNode<T>> {
     const nodeToRemove = this.find(cb);
 
     if (nodeToRemove) {

@@ -10,14 +10,10 @@ export default class QueueImpl<T = unknown> {
     return this;
   }
 
-  dequeue(): T {
+  dequeue(): Nullable<T> {
     const firstNode = this.#list.pop();
 
-    if (firstNode === null) {
-      throw new Error('Queue is empty');
-    }
-
-    return firstNode.value;
+    return firstNode && firstNode.value;
   }
 
   peek(): Nullable<T> {

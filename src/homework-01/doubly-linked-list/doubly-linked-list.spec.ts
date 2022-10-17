@@ -1,8 +1,8 @@
-import DoublyLinkedListImpl from './doubly-linked-list';
+import DoublyLinkedList from './doubly-linked-list';
 
 describe('Doubly linked list implementation', () => {
   it('Attempt to construct list from iterable', () => {
-    const list = new DoublyLinkedListImpl<string>('foobar');
+    const list = new DoublyLinkedList<string>('foobar');
 
     expect(list.head?.value).toBe('f');
     expect(list.tail?.value).toBe('r');
@@ -10,11 +10,11 @@ describe('Doubly linked list implementation', () => {
 
   it('Attempt to construct list from non iterable', () => {
     // @ts-ignore
-    expect(() => new DoublyLinkedListImpl(123)).toThrowError('Object is not iterable');
+    expect(() => new DoublyLinkedList(123)).toThrowError('Object is not iterable');
   });
 
   it('List clean up', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     list.clean();
     expect(list.tail).toBeNull();
@@ -22,7 +22,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Pushing value into list', () => {
-    const list = new DoublyLinkedListImpl<number>();
+    const list = new DoublyLinkedList<number>();
 
     list.push(0);
     expect(list.head?.value).toBe(0);
@@ -35,7 +35,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Popping value from list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1]);
+    const list = new DoublyLinkedList<number>([0, 1]);
 
     expect(list.pop()?.value).toBe(1);
     expect(list.tail?.value).toBe(0);
@@ -49,7 +49,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Unshifting value into list', () => {
-    const list = new DoublyLinkedListImpl<number>();
+    const list = new DoublyLinkedList<number>();
 
     list.unshift(0);
     expect(list.head?.value).toBe(0);
@@ -62,7 +62,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Shifting value from list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1]);
+    const list = new DoublyLinkedList<number>([0, 1]);
 
     expect(list.shift()?.value).toBe(0);
     expect(list.head?.value).toBe(1);
@@ -76,7 +76,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Inserting new value before the given value', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     expect(list.insertBefore((value) => value === 1, 0.5)).toBe(true);
     expect(list.head?.next?.value).toBe(0.5);
@@ -90,7 +90,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Inserting new value after the given value', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     expect(list.insertAfter((value) => value === 1, 1.5)).toBe(true);
     expect(list.tail?.prev?.value).toBe(1.5);
@@ -104,7 +104,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Searching value within list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     expect(list.find((value) => value === 1)?.value).toBe(1);
     expect(list.find((value) => value === 2)?.value).toBe(2);
@@ -112,7 +112,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Removing value from list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2, 3, 4]);
+    const list = new DoublyLinkedList<number>([0, 1, 2, 3, 4]);
 
     expect(list.remove((value) => value === 1)?.value).toBe(1);
     expect(list.head?.next?.value).toBe(2);
@@ -127,7 +127,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Replacing value within list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2, 3, 4]);
+    const list = new DoublyLinkedList<number>([0, 1, 2, 3, 4]);
 
     expect(list.replace((value) => value === 3, 33)).toBe(true);
     expect(list.tail?.prev?.value).toBe(33);
@@ -135,20 +135,20 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('List instance must be iterable', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     expect([...list]).toEqual([0, 1, 2]);
   });
 
   it('Reversing list', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
     list.reverse();
 
     expect([...list]).toEqual([2, 1, 0]);
   });
 
   it('Getting list values in backwards', () => {
-    const list = new DoublyLinkedListImpl<number>([0, 1, 2]);
+    const list = new DoublyLinkedList<number>([0, 1, 2]);
 
     expect([...list.reversedValues()]).toEqual([2, 1, 0]);
   });

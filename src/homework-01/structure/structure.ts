@@ -1,7 +1,7 @@
 import type { Key, KeyMapFunction } from './structure.types';
 import type { Nullable } from '../../utils/common.types';
 
-export default class StructureImpl<T = unknown> {
+export default class Structure<T = unknown> {
   #data: T[];
 
   #getIndexByKey: KeyMapFunction;
@@ -29,7 +29,7 @@ export default class StructureImpl<T = unknown> {
 
     this.#data = Array<T>(keys.length);
 
-    const mappedFunctionBody = StructureImpl.#getKeyIndexMapperFunction(keys);
+    const mappedFunctionBody = Structure.#getKeyIndexMapperFunction(keys);
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     this.#getIndexByKey = <KeyMapFunction>new Function('key', mappedFunctionBody);
   }

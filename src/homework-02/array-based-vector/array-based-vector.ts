@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import type { Optional } from '../../utils/common.types';
-import type { Direction } from './array-based-vector.interface';
+import type { Direction } from './array-based-vector.types';
 
-export default class VectorImpl<T> implements Iterable<T> {
+export default class Vector<T> implements Iterable<T> {
   #length: number = 0;
 
   #capacityGrowCoeff: number = 2;
@@ -108,8 +108,8 @@ export default class VectorImpl<T> implements Iterable<T> {
     return this;
   }
 
-  splice(start?: number, removeCount?: number, ...values: T[]): VectorImpl<T> {
-    const removedValues = new VectorImpl<T>(this.#capacity);
+  splice(start?: number, removeCount?: number, ...values: T[]): Vector<T> {
+    const removedValues = new Vector<T>(this.#capacity);
 
     if (start === undefined || start > this.#length) return removedValues;
 
@@ -164,8 +164,8 @@ export default class VectorImpl<T> implements Iterable<T> {
     return stringifiedVector;
   }
 
-  map<U>(cb: (element: T, index: number, vector: this) => U): VectorImpl<U> {
-    const mappedVector = new VectorImpl<U>(this.#capacity);
+  map<U>(cb: (element: T, index: number, vector: this) => U): Vector<U> {
+    const mappedVector = new Vector<U>(this.#capacity);
 
     let index = 0;
     for (const element of this.values()) {
@@ -176,8 +176,8 @@ export default class VectorImpl<T> implements Iterable<T> {
     return mappedVector;
   }
 
-  filter(cb: (element: T, index: number, vector: this) => boolean): VectorImpl<T> {
-    const filteredArray = new VectorImpl<T>(this.#capacity);
+  filter(cb: (element: T, index: number, vector: this) => boolean): Vector<T> {
+    const filteredArray = new Vector<T>(this.#capacity);
 
     let index = 0;
     for (const element of this.values()) {
