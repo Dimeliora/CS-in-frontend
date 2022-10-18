@@ -19,5 +19,5 @@ const sortedUsersArray = [
 ];
 
 console.log(binarySearch(sortedUsersArray, ({ username }) => username.localeCompare('Ann')); // 0
-console.log(binarySearch(sortedUsersArray, ({ username }) => username.localeCompare('Mike'))); // 3
+console.log(binarySearch(sortedUsersArray, ({ username }) => username.localeCompare('Mike'))); // -1
 ```
