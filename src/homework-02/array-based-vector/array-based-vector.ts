@@ -2,7 +2,7 @@
 import type { Optional } from '../../utils/common.types';
 import type { Direction } from './array-based-vector.types';
 
-export default class Vector<T> implements Iterable<T> {
+export default class Vector<T = unknown> implements Iterable<T> {
   #length: number = 0;
 
   #capacityGrowCoeff: number = 2;
