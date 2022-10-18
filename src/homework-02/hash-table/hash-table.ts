@@ -1,7 +1,7 @@
 import { DoublyLinkedList } from '../../homework-01';
 import type { Optional } from '../../utils/common.types';
 
-export default class HashTable<T> {
+export default class HashTable<T = unknown> {
   #hashArray: DoublyLinkedList<[string, T]>[] = [];
 
   #keysCount: number = 0;
@@ -14,7 +14,24 @@ export default class HashTable<T> {
 
   #hashArraySize: number;
 
-  constructor(size: number = 10) {
+  static #checkIsPrimeValue(value: number): boolean {
+    for (let i = 2; i <= Math.sqrt(value); i += 1) {
+      if (value % i === 0) return false;
+    }
+
+    return true;
+  }
+
+  static #generateNextPrimeSizeValue(currentSize: number): number {
+    let nextPrimeValue = currentSize + 1;
+    while (!HashTable.#checkIsPrimeValue(nextPrimeValue)) {
+      nextPrimeValue += 1;
+    }
+
+    return nextPrimeValue;
+  }
+
+  constructor(size: number = 11) {
     if (size <= 0 || !Number.isInteger(size)) {
       throw new Error('Invalid hash array size value provided');
     }
@@ -49,7 +66,7 @@ export default class HashTable<T> {
 
   #checkoutTableRehashing(): void {
     const prevHashArray = this.#hashArray;
-    this.#hashArraySize *= this.#hashArrayExtendCoeff;
+    this.#hashArraySize = HashTable.#generateNextPrimeSizeValue(this.#hashArraySize * this.#hashArrayExtendCoeff);
     this.#keysCount = 0;
 
     this.#prepareHashArray();
@@ -61,7 +78,7 @@ export default class HashTable<T> {
     }
   }
 
-  #getHashArrayList(key: any): [DoublyLinkedList<[string, T]>, string] {
+  #getHashArrayList(key: unknown): [DoublyLinkedList<[string, T]>, string] {
     const stringifiedKey = String(key);
     const index = this.#hashKeyToIndex(stringifiedKey);
     const hashArrayList = this.#hashArray[index];
