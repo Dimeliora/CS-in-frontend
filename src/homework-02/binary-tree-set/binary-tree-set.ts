@@ -12,6 +12,25 @@ export default class BinaryTreeSet<T = unknown> implements Iterable<T>, Iterable
     return value < valueToCompare ? 1 : -1;
   };
 
+  static #getSuccessor<T>(node: BinaryTreeSetNode<T>): BinaryTreeSetNode<T> {
+    let succersorParentNode = node;
+    let successorNode = node;
+    let currentNode = node.rightChild;
+
+    while (currentNode !== null) {
+      succersorParentNode = successorNode;
+      successorNode = currentNode;
+      currentNode = currentNode.leftChild;
+    }
+
+    if (successorNode !== node.rightChild) {
+      succersorParentNode.leftChild = successorNode.rightChild;
+      successorNode.rightChild = node.rightChild;
+    }
+
+    return successorNode;
+  }
+
   static #getIterator<T>(iterable?: Iterator<T>): IterableIterator<T> {
     return {
       [Symbol.iterator](): IterableIterator<T> {
@@ -48,25 +67,6 @@ export default class BinaryTreeSet<T = unknown> implements Iterable<T>, Iterable
     for (const element of iterable) {
       this.add(element);
     }
-  }
-
-  static #getSuccessor<T>(node: BinaryTreeSetNode<T>): BinaryTreeSetNode<T> {
-    let succersorParentNode = node;
-    let successorNode = node;
-    let currentNode = node.rightChild;
-
-    while (currentNode !== null) {
-      succersorParentNode = successorNode;
-      successorNode = currentNode;
-      currentNode = currentNode.leftChild;
-    }
-
-    if (successorNode !== node.rightChild) {
-      succersorParentNode.leftChild = successorNode.rightChild;
-      successorNode.rightChild = node.rightChild;
-    }
-
-    return successorNode;
   }
 
   add(newValue: T): this {
