@@ -26,4 +26,12 @@ describe('String iterator implementation', () => {
     expect([...StringIterator.iterate(stringOne)]).toEqual(['F', ':', ' ', ' ', 'R', ':', ' ', '🚀']);
     expect([...StringIterator.iterate(stringTwo)]).toEqual(['F', ':', ' ', '😁', ' ', 'R', ':', ' ']);
   });
+
+  it('Iterator must iterate strings with combining characters', () => {
+    // Character 'й' is a character 'и' with breve added
+    const string = 'йог';
+
+    expect(string.length).toBe(4);
+    expect([...StringIterator.iterate(string)]).toEqual(['й', 'о', 'г']);
+  });
 });

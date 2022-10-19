@@ -14,14 +14,15 @@ export default class StringIterator {
   }
 
   static iterate(string: string): IterableIterator<string> {
+    const normalizedString = string.normalize();
     let firstSurrogate: Nullable<number> = null;
     let pointer = 0;
 
     return {
       next(): IteratorResult<string> {
-        if (pointer >= string.length) return { done: true, value: undefined };
+        if (pointer >= normalizedString.length) return { done: true, value: undefined };
 
-        const charCode = string.charCodeAt(pointer);
+        const charCode = normalizedString.charCodeAt(pointer);
         if (StringIterator.#isFirstSurrogate(charCode)) {
           firstSurrogate = charCode;
           pointer += 1;
@@ -42,11 +43,11 @@ export default class StringIterator {
           return this.next();
         }
 
-        const char = String.fromCharCode(charCode);
+        const regularChar = String.fromCharCode(charCode);
         firstSurrogate = null;
         pointer += 1;
 
-        return { done: false, value: char };
+        return { done: false, value: regularChar };
       },
       [Symbol.iterator](): IterableIterator<string> {
         return this;
