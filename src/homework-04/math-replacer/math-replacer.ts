@@ -6,7 +6,7 @@ export default class MathReplacer {
       // eslint-disable-next-line @typescript-eslint/no-implied-eval
       return new Function('', `{ return ${match}; }`)();
     } catch (error) {
-      throw new SyntaxError('Inappropriate math expression found');
+      return match;
     }
   }
 

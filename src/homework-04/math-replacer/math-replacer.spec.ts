@@ -49,9 +49,9 @@ describe('Implementation of math expression calculator/replacer (Calc)', () => {
     `);
   });
 
-  it('Attempt to work with invalid math expression', () => {
+  it('Calc must not to replace in case of invalid math expression', () => {
     const text = 'Is it correct?: 3 ++ 4';
 
-    expect(() => MathReplacer.calculate(text)).toThrowError('Inappropriate math expression found');
+    expect(MathReplacer.calculate(text)).toBe('Is it correct?: 3 ++ 4');
   });
 });
