@@ -55,6 +55,8 @@ format('User ${name} is logged in at ${time} as ${role}', { name: 'John', time: 
 cleanupRepeatingGroups(string: string): string
 ```
 
+Пример использования:
+
 ```js
 cleanupRepeatingGroups('aaaabbbbczzzz'); // abcz
 cleanupRepeatingGroups('abababbbabcabc'); // abbabc
