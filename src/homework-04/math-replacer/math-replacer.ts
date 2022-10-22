@@ -1,5 +1,5 @@
 export default class MathReplacer {
-  static #mathRegexp: RegExp = /\(*-?\d+( [\\\-+*]+ \(*-?\d+\)*)+/g;
+  static #mathRegexp: RegExp = /-?[\d(][\d+\-*\\() ]+(\d|\))+/g;
 
   static #mathReplaceFunction(match: string): string {
     try {

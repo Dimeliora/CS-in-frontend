@@ -13,10 +13,10 @@ describe('Implementation of math expression calculator/replacer (Calc)', () => {
     `);
   });
 
-  it('Calc must work with arithmetics containing expressions within brackets', () => {
+  it('Calc must work with arithmetics containing expressions within brackets (and no spaces around the operator)', () => {
     const text = `
-    Some more math: (3 + 3) * 2 - 1
-    Here is a power of 3 ** (2 + 2)
+    Some more math: (3 + 3)*2 - 1
+    Here is a power of 3 ** (2+2)
     `;
 
     expect(MathReplacer.calculate(text)).toBe(`
@@ -28,12 +28,14 @@ describe('Implementation of math expression calculator/replacer (Calc)', () => {
   it('Calc must work with arithmetics containing expressions within nested brackets', () => {
     const text = `
     For the lisp fans: (2 + (3 + (4 + (5 + 6))))
-    More brackets for the god of brackets: 2 + (3 + (2 + 2) * 2) * (4 - 1) + (1 + 1) * 2
+    Many smiles (((2 + 3) * 2) - 1) up here
+    More brackets for the god of the brackets: 2 + (3 + (2 + 2) * 2) * (4 - 1) + (1 + 1) * 2
     `;
 
     expect(MathReplacer.calculate(text)).toBe(`
     For the lisp fans: 20
-    More brackets for the god of brackets: 39
+    Many smiles 9 up here
+    More brackets for the god of the brackets: 39
     `);
   });
 
