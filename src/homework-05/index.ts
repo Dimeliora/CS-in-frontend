@@ -5,4 +5,4 @@ export { default as filter } from './iterator-exercises/iterator-functions/filte
 export { default as enumerate } from './iterator-exercises/iterator-functions/enumerate';
 export { default as seq } from './iterator-exercises/iterator-functions/seq';
 export { default as zip } from './iterator-exercises/iterator-functions/zip';
-export { default as mapSeq } from './iterator-exercises/iterator-functions/mapSeq';
+export { default as mapSeq } from './iterator-exercises/iterator-functions/map-seq';
