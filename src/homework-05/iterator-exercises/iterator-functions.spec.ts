@@ -59,7 +59,6 @@ describe('Implementation of zip - concurrently iterates through the all of provi
     expect([...zip(numbers, string, set)]).toEqual([
       [1, 'F', true],
       [2, 'o', false],
-      [3, 'o', undefined],
     ]);
   });
 });
