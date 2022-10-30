@@ -44,6 +44,14 @@ class TaskWorker<T> {
 }
 
 export default function forEach<T>(iterable: Iterable<T>, callback: (iterElement: T) => void): Promise<void> {
+  if (typeof iterable[Symbol.iterator] !== 'function') {
+    throw new TypeError('Object is not iterable');
+  }
+
+  if (typeof callback !== 'function') {
+    throw new TypeError('Callback is not a type of function');
+  }
+
   const taskWorker = new TaskWorker(iterable, callback);
   return new Promise((resolve, reject) => {
     taskWorker.iterate(resolve, reject);

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import forEach from './for-each';
 
 describe('Implementation of forEach function', () => {
@@ -25,5 +26,23 @@ describe('Implementation of forEach function', () => {
         expect(err).toBeInstanceOf(TypeError);
       }),
     );
+  });
+
+  it('Attemtp to work with non-iterable object', () => {
+    const nums = 1234567;
+
+    expect(() =>
+      // @ts-ignore
+      forEach(nums, (num) => {
+        console.log(num);
+      }),
+    ).toThrowError('Object is not iterable');
+  });
+
+  it('Attemtp to work with no callback provided', () => {
+    const nums = [...Array(5e5).keys()];
+
+    // @ts-ignore
+    expect(() => forEach(nums)).toThrowError('Callback is not a type of function');
   });
 });
