@@ -17,6 +17,6 @@ export default class QueueImpl<T = unknown> {
   }
 
   peek(): Nullable<T> {
-    return this.#list.tail?.value ?? null;
+    return this.#list.tail && this.#list.tail.value;
   }
 }
