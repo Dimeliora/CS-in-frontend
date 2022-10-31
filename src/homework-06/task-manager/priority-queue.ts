@@ -3,6 +3,10 @@ import type { Optional } from '../../utils/common.types';
 export default class PriorityQueue<T> {
   #elements: T[] = [];
 
+  get isEmpty(): boolean {
+    return this.#elements.length === 0;
+  }
+
   insert(value: T, predicate: (element: T) => boolean): void {
     let index = this.#elements.length - 1;
 

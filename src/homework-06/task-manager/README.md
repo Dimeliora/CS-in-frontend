@@ -2,17 +2,7 @@
 
 ### 3. Доработка функции forEach - добавление обработки задач по заданному приоритету
 
-Реализация представлена классом TaskManager. Для обхода iterable-объектов класс предоставляет метод forEach, принимающий iterable-объект, функцию обратного вызова для работы с каждым из элементов и опциональный объект настроек, задающий приоритет задачи (по умолчанию задача имеет приоритет average). Метод возвращает промис
-
-```ts
-  forEach<T>(
-    iterable: Iterable<T>,
-    callback: (iterElement: T) => void,
-    options: ForEachOptions = { priority: 'average' },
-  ): Promise<void>
-```
-
-При создании экземпляра класса можно передать в конструктор необязательный аргумент options, задающий значения времени, выделяемого на обработку пула задач и простой (по умолчанию заданы равными 100мс)
+Реализация представлена классом TaskManager. При создании экземпляра класса можно передать в конструктор необязательный аргумент options, задающий значения времени, выделяемого на обработку пула задач и простой (по умолчанию заданы равными 100мс):
 
 ```ts
 interface TaskManagerOptions {
@@ -21,7 +11,23 @@ interface TaskManagerOptions {
 }
 ```
 
-При передаче функции forEach неперебираемого объекта или при отсутствии callback-функции возбуждаются исключения типа TypeError.
+Для обхода iterable-объектов класс предоставляет метод forEach, принимающий iterable-объект, callback-функцию и опциональный объект настроек, задающий приоритет задачи (по умолчанию задача имеет приоритет average). Метод возвращает промис:
+
+```ts
+  forEach<T>(
+    iterable: Iterable<T>,
+    callback: Callback<T>,
+    options: ForEachOptions = { priority: 'average' },
+  ): Promise<void>
+```
+
+Сигнатура callback совместима с функцией, передаваемой в качестве аргумента в метод Array.prototype.forEach:
+
+```ts
+type Callback<T> = (el: T, index: number, iterable: Iterable<T>) => void;
+```
+
+При передаче в функцию forEach неперебираемого объекта или при отсутствии callback-функции возбуждаются исключения типа TypeError.
 
 Обработка задач осуществляется согласно их значениям приоритета, доступные варианты:
 
@@ -74,8 +80,7 @@ taskManager
   )
   .then(() => {
     console.log('Finished!');
-  })
-  .catch(console.error);
+  });
 
 taskManager
   .forEach(
@@ -87,8 +92,7 @@ taskManager
   )
   .then(() => {
     console.log('Finished!');
-  })
-  .catch(console.error);
+  });
 
 taskManager
   .forEach(
@@ -100,6 +104,5 @@ taskManager
   )
   .then(() => {
     console.log('Finished!');
-  })
-  .catch(console.error);
+  });
 ```
