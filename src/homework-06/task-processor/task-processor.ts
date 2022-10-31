@@ -1,4 +1,4 @@
-import type { Task, TaskProcessorOptions } from './task-processor.types';
+import type { Task, TaskProcessorOptions, Callback } from './task-processor.types';
 
 export default class TaskProcessor {
   #poolExecTime: number = 100;
@@ -9,7 +9,7 @@ export default class TaskProcessor {
 
   #taskPool: Set<Task> = new Set();
 
-  #isBusy: boolean = false;
+  #isStarted: boolean = false;
 
   constructor({ poolExecTime, idleTime }: TaskProcessorOptions = {}) {
     if (poolExecTime != null) {
@@ -19,46 +19,62 @@ export default class TaskProcessor {
     if (idleTime != null) this.#idleTime = idleTime;
   }
 
-  *#createTask<T>(iterable: Iterable<T>, callback: (iterElement: T) => void): Generator<'timeout' | Error> {
+  *#createWorker<T>(iterable: Iterable<T>, callback: Callback<T>): Generator<'timeout' | Error> {
+    const iterator = iterable[Symbol.iterator]();
     let startTime = performance.now();
+    let index = 0;
 
-    for (const value of iterable) {
+    while (true) {
+      const { done, value } = iterator.next();
+
+      if (done) return;
+
       if (performance.now() - startTime > this.#taskExecTime) {
         yield 'timeout';
         startTime = performance.now();
       }
 
       try {
-        callback(value);
+        callback(value, index, iterable);
       } catch (error) {
         if (error instanceof Error) yield error;
       }
+
+      index += 1;
     }
   }
 
   #iterate(): void {
-    if (!this.#isBusy && this.#taskPool.size > 0) {
-      this.#isBusy = true;
-      for (const task of this.#taskPool.values()) {
-        const { done, value } = task.worker.next();
+    this.#taskExecTime = this.#poolExecTime / (this.#taskPool.size || 1);
 
-        if (done) {
-          this.#taskPool.delete(task);
-          task.resolve();
-        }
+    for (const task of this.#taskPool.values()) {
+      const { done, value } = task.worker.next();
 
-        if (value instanceof Error) task.reject(value);
+      if (done) {
+        this.#taskPool.delete(task);
+        task.resolve();
       }
 
-      setTimeout(() => {
-        this.#taskExecTime = this.#poolExecTime / (this.#taskPool.size || 1);
-        this.#isBusy = false;
+      if (value instanceof Error) task.reject(value);
+    }
+
+    setTimeout(() => {
+      if (this.#taskPool.size > 0) {
         this.#iterate();
-      }, this.#idleTime);
+      } else {
+        this.#isStarted = false;
+      }
+    }, this.#idleTime);
+  }
+
+  #execute(): void {
+    if (!this.#isStarted) {
+      this.#isStarted = true;
+      setTimeout(this.#iterate.bind(this));
     }
   }
 
-  forEach<T>(iterable: Iterable<T>, callback: (iterElement: T) => void): Promise<void> {
+  forEach<T>(iterable: Iterable<T>, callback: Callback<T>): Promise<void> {
     if (typeof iterable[Symbol.iterator] !== 'function') {
       throw new TypeError('Object is not iterable');
     }
@@ -67,11 +83,11 @@ export default class TaskProcessor {
       throw new TypeError('Callback is not a type of function');
     }
 
-    const worker = this.#createTask(iterable, callback);
+    const worker = this.#createWorker(iterable, callback);
 
     return new Promise((resolve, reject) => {
       this.#taskPool.add({ worker, resolve, reject });
-      this.#iterate();
+      this.#execute();
     });
   }
 }
