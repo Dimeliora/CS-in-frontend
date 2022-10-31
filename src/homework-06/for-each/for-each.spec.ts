@@ -20,7 +20,7 @@ describe('Implementation of forEach function', () => {
 
     expect(
       forEach(nums, (num) => {
-        // @ts-ignore
+        // @ts-expect-error
         num.toFixed();
       }).catch((err) => {
         expect(err).toBeInstanceOf(TypeError);
@@ -32,7 +32,7 @@ describe('Implementation of forEach function', () => {
     const nums = 1234567;
 
     expect(() =>
-      // @ts-ignore
+      // @ts-expect-error
       forEach(nums, (num) => {
         console.log(num);
       }),
@@ -42,7 +42,7 @@ describe('Implementation of forEach function', () => {
   it('Attemtp to work with no callback provided', () => {
     const nums = [...Array(5e5).keys()];
 
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => forEach(nums)).toThrowError('Callback is not a type of function');
   });
 });

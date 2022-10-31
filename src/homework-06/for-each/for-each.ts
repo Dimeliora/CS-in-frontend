@@ -1,3 +1,5 @@
+import type { Callback } from './for-each.types';
+
 class TaskWorker<T> {
   #execTime: number = 100;
 
@@ -5,28 +7,32 @@ class TaskWorker<T> {
 
   #task: Generator<'timeout' | Error>;
 
-  constructor(iterable: Iterable<T>, callback: (iterElement: T) => void) {
-    const iterator = iterable[Symbol.iterator]();
-    this.#task = this.#createWorker(iterator, callback);
+  constructor(iterable: Iterable<T>, callback: Callback<T>) {
+    this.#task = this.#createWorker(iterable, callback);
   }
 
-  *#createWorker(iterator: Iterator<T>, callback: (iterElement: T) => void): Generator<'timeout' | Error> {
-    let { done, value } = iterator.next();
+  *#createWorker(iterable: Iterable<T>, callback: Callback<T>): Generator<'timeout' | Error> {
+    const iterator = iterable[Symbol.iterator]();
     let startTime = performance.now();
+    let index = 0;
 
-    while (!done) {
+    while (true) {
+      const { done, value } = iterator.next();
+
+      if (done) return;
+
       if (performance.now() - startTime > this.#execTime) {
         yield 'timeout';
         startTime = performance.now();
       }
 
       try {
-        callback(value);
+        callback(value, index, iterable);
       } catch (error) {
         if (error instanceof Error) yield error;
       }
 
-      ({ done, value } = iterator.next());
+      index += 1;
     }
   }
 
@@ -43,7 +49,7 @@ class TaskWorker<T> {
   }
 }
 
-export default function forEach<T>(iterable: Iterable<T>, callback: (iterElement: T) => void): Promise<void> {
+export default function forEach<T>(iterable: Iterable<T>, callback: Callback<T>): Promise<void> {
   if (typeof iterable[Symbol.iterator] !== 'function') {
     throw new TypeError('Object is not iterable');
   }
