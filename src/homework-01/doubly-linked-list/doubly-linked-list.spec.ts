@@ -9,7 +9,7 @@ describe('Doubly linked list implementation', () => {
   });
 
   it('Attempt to construct list from non iterable', () => {
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new DoublyLinkedList(123)).toThrowError('Object is not iterable');
   });
 

@@ -9,7 +9,7 @@ describe('Binary tree set (BTS) implementation', () => {
   });
 
   it('Attempt to construct BTS from noniterable', () => {
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new BinaryTreeSet(123)).toThrowError('Object is not iterable');
   });
 
@@ -107,7 +107,7 @@ describe('Binary tree set (BTS) implementation', () => {
   });
 
   it('Attempt to construct BTS with invalid custom comparator type', () => {
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new BinaryTreeSet([5, 2, 7, 4, 9], true)).toThrowError('Comparator must be a function');
   });
 });

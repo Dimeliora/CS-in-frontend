@@ -2,9 +2,9 @@ import Structure from './structure';
 
 describe('Structure implementation through code generation', () => {
   it('Attempt to construct structure without keys provided', () => {
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Structure()).toThrowError('Array of keys must be provided');
-    // @ts-ignore
+    // @ts-expect-error
     expect(() => new Structure('name')).toThrowError('Array of keys must be provided');
     expect(() => new Structure([])).toThrowError('Array of keys must be provided');
   });
