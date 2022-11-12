@@ -2,7 +2,7 @@ import type { ExtractIterablesType } from '../iterator.types';
 
 export default function seq<T extends Iterable<any>[]>(...iterables: T): IterableIterator<ExtractIterablesType<T>> {
   let iterableCount = 0;
-  let currentIterator: Iterator<unknown> | null = null;
+  let currentIterator: Iterator<ExtractIterablesType<T>> | null = null;
 
   return {
     next(): IteratorResult<ExtractIterablesType<T>> {
@@ -19,8 +19,7 @@ export default function seq<T extends Iterable<any>[]>(...iterables: T): Iterabl
         return this.next();
       }
 
-      const typedValue = <ExtractIterablesType<T>>value;
-      return { done: false, value: typedValue };
+      return { done: false, value };
     },
     [Symbol.iterator](): IterableIterator<ExtractIterablesType<T>> {
       return this;
