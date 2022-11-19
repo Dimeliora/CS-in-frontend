@@ -1,16 +1,14 @@
-import AbstractEventHandlersProvider from './abstarct-event-handlers-provider';
-import type { EventHandler } from '../interfaces';
+import AbstractEventHandlersProvider from './abstarct-event-handlers-provider.js';
+import type { EventHandler } from '../interfaces.js';
 
 export default class EventMap extends AbstractEventHandlersProvider {
-  eventsMap = new Map<string, EventHandler[]>();
-
   getHandlers(eventName: string): Generator<EventHandler> {
-    const handlers = this.eventsMap.get(eventName) ?? [];
+    const { anyEventHandlers } = this;
+    const handlers = this.eventHandlersMap.get(eventName) ?? [];
 
     function* generate() {
-      for (const handler of handlers) {
-        yield handler;
-      }
+      yield* handlers;
+      yield* anyEventHandlers;
     }
 
     return generate();

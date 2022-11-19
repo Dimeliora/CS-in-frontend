@@ -1,12 +1,11 @@
-import AbstractEventHandlersProvider from './abstarct-event-handlers-provider';
-import wildcardMatcher from '../helpers/wildcard-matcher';
-import type { EventHandler } from '../interfaces';
+import AbstractEventHandlersProvider from './abstarct-event-handlers-provider.js';
+import wildcardMatcher from '../helpers/wildcard-matcher.js';
+import type { EventHandler } from '../interfaces.js';
 
 export default class EventNamespacesMap extends AbstractEventHandlersProvider {
-  eventsMap: Map<string, EventHandler[]> = new Map();
-
   getHandlers(eventName: string, delimiter: string): Generator<EventHandler> {
-    const eventsMapIterator = this.eventsMap.entries();
+    const { anyEventHandlers } = this;
+    const eventsMapIterator = this.eventHandlersMap.entries();
 
     function* generate() {
       for (const [event, handlers] of eventsMapIterator) {
@@ -14,6 +13,8 @@ export default class EventNamespacesMap extends AbstractEventHandlersProvider {
           yield* handlers;
         }
       }
+
+      yield* anyEventHandlers;
     }
 
     return generate();
