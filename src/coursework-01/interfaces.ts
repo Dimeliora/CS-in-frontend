@@ -19,6 +19,7 @@ export interface EventHandlersProvider {
   removeAllEventHandlers(eventName: string): boolean;
   getHandlers(eventName: string, delimiter?: string): Generator<EventHandler>;
   getEventListeners(eventName: string): EventHandler[];
+  setMaxListeners(max: number): void;
 }
 
 export interface EventUnsubscriber<T> {

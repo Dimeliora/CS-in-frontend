@@ -59,8 +59,14 @@ export default class EventEmitter {
     };
 
     unsubscriber =
-      order === 'append' ? this.on(eventName, wrappedHandler) : this.prependListener(eventName, wrappedHandler);
+      order === 'append'
+        ? this.addListener(eventName, wrappedHandler)
+        : this.prependListener(eventName, wrappedHandler);
     return unsubscriber;
+  }
+
+  setMaxListeners(maxListeners: number): void {
+    this.#eventHandlersProvider.setMaxListeners(maxListeners);
   }
 
   on(eventName: EventName, handler: EventHandler): EventUnsubscriber<this> {

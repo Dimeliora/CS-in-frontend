@@ -1,9 +1,12 @@
+/* eslint-disable no-console */
 import type { EventHandlersProvider, EventHandler, HandlerOrder } from '../interfaces.js';
 
 export default abstract class AbstractEventHandlersProvider implements EventHandlersProvider {
   eventHandlersMap = new Map<string, EventHandler[]>();
 
   anyEventHandlers: EventHandler[] = [];
+
+  maxListeners: number = 0;
 
   get anyHandlers(): EventHandler[] {
     return this.anyEventHandlers;
@@ -22,6 +25,24 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     return this.eventHandlersMap.get(eventName)!;
   }
 
+  checkEventListenersAmount(eventName?: string): void {
+    const handlers = eventName == null ? this.anyEventHandlers : this.eventHandlersMap.get(eventName) ?? [];
+    const event = eventName ?? 'any';
+    if (this.maxListeners !== 0 && handlers.length > this.maxListeners) {
+      console.warn(
+        `Possible EventEmitter memory leak detected for ${event} event. Use emitter.setMaxListeners() to increase limit`,
+      );
+    }
+  }
+
+  setMaxListeners(maxListeners: number) {
+    if (maxListeners < 0) {
+      throw new RangeError('Amount of listeners must be greater or equal 0');
+    }
+
+    this.maxListeners = maxListeners;
+  }
+
   addHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
     const eventHandlers = this.checkoutEventHandlersArray(eventName);
     if (order === 'append') {
@@ -29,6 +50,8 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     } else {
       eventHandlers!.unshift(handler);
     }
+
+    this.checkEventListenersAmount(eventName);
   }
 
   removeHandler(eventName: string, handler: EventHandler): void {
@@ -53,6 +76,8 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     } else {
       this.anyEventHandlers.unshift(handler);
     }
+
+    this.checkEventListenersAmount();
   }
 
   removeAnyHandler(handler: EventHandler): void {
