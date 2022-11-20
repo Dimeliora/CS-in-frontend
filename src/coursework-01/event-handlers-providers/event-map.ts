@@ -1,4 +1,4 @@
-import AbstractEventHandlersProvider from './abstarct-event-handlers-provider.js';
+import AbstractEventHandlersProvider from './event-handlers-provider.js';
 import type { EventHandler } from '../interfaces.js';
 
 export default class EventMap extends AbstractEventHandlersProvider {

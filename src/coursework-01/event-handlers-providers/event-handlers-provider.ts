@@ -1,9 +1,18 @@
-import type { EventHandlersProvider, EventHandler } from '../interfaces.js';
+import type { EventHandlersProvider, EventHandler, HandlerOrder } from '../interfaces.js';
 
 export default abstract class AbstractEventHandlersProvider implements EventHandlersProvider {
   eventHandlersMap = new Map<string, EventHandler[]>();
 
   anyEventHandlers: EventHandler[] = [];
+
+  get anyHandlers(): EventHandler[] {
+    return this.anyEventHandlers;
+  }
+
+  get eventNames(): string[] {
+    const keys = this.eventHandlersMap.keys();
+    return Array.from(keys);
+  }
 
   checkoutEventHandlersArray(eventName: string): EventHandler[] {
     if (!this.eventHandlersMap.has(eventName)) {
@@ -13,14 +22,13 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     return this.eventHandlersMap.get(eventName)!;
   }
 
-  addHandler(eventName: string, handler: EventHandler): void {
+  addHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
     const eventHandlers = this.checkoutEventHandlersArray(eventName);
-    eventHandlers!.push(handler);
-  }
-
-  prependHandler(eventName: string, handler: EventHandler): void {
-    const eventHandlers = this.checkoutEventHandlersArray(eventName);
-    eventHandlers!.unshift(handler);
+    if (order === 'append') {
+      eventHandlers!.push(handler);
+    } else {
+      eventHandlers!.unshift(handler);
+    }
   }
 
   removeHandler(eventName: string, handler: EventHandler): void {
@@ -35,17 +43,25 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     }
   }
 
-  addAnyHandler(handler: EventHandler): void {
-    this.anyEventHandlers.push(handler);
+  removeAllEventHandlers(eventName: string): boolean {
+    return this.eventHandlersMap.delete(eventName);
   }
 
-  prependAnyHandler(handler: EventHandler): void {
-    this.anyEventHandlers.unshift(handler);
+  addAnyHandler(handler: EventHandler, order: HandlerOrder = 'append'): void {
+    if (order === 'append') {
+      this.anyEventHandlers.push(handler);
+    } else {
+      this.anyEventHandlers.unshift(handler);
+    }
   }
 
   removeAnyHandler(handler: EventHandler): void {
     this.anyEventHandlers = this.anyEventHandlers.filter((cb) => cb !== handler);
   }
 
-  abstract getHandlers(eventName: string, delimiter?: string): Generator<EventHandler>;
+  getEventListeners(eventName: string): EventHandler[] {
+    return this.eventHandlersMap.get(eventName) ?? [];
+  }
+
+  abstract getHandlers(eventName: string, delimiter?: string): Generator<EventHandler, any, unknown>;
 }
