@@ -16,9 +16,12 @@ export default class EventEmitter {
 
   #namespaceDelimiter: string;
 
-  constructor({ namespaces = false, namespaceDelimiter = '.' }: EventEmitterOptions = {}) {
+  #anyEventsFirst: boolean;
+
+  constructor({ namespaces = false, namespaceDelimiter = '.', anyEventsFirst = false }: EventEmitterOptions = {}) {
     this.#namespaceDelimiter = namespaceDelimiter;
     this.#namespaces = namespaces;
+    this.#anyEventsFirst = anyEventsFirst;
 
     this.#eventHandlersProvider = this.#namespaces ? new EventNamespacesMap() : new EventMap();
   }
@@ -50,8 +53,8 @@ export default class EventEmitter {
 
     let handlerCallsCount = 0;
     let unsubscriber: EventUnsubscriber<this>;
-    const wrappedHandler = (...payload: unknown[]) => {
-      handler(...payload);
+    const wrappedHandler = (payload: unknown) => {
+      handler(payload);
       handlerCallsCount += 1;
       if (handlerCallsCount >= timesCount) {
         unsubscriber.off();
@@ -122,30 +125,53 @@ export default class EventEmitter {
     return this.#subscribeForTimes(eventName, 1, handler, 'prepend');
   }
 
+  await(eventName: EventName): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      this.on(eventName, (payload: unknown) => {
+        if (payload instanceof Error) {
+          reject(payload);
+        } else {
+          resolve(payload);
+        }
+      });
+    });
+  }
+
   offEvent(eventName: EventName): boolean {
     const stringifiedEventName = this.#stringifyEventName(eventName);
     return this.#eventHandlersProvider.removeAllEventHandlers(stringifiedEventName);
   }
 
-  listeners(eventName: EventName): EventHandler[] {
+  handlers(eventName: EventName): EventHandler[] {
     const stringifiedEventName = this.#stringifyEventName(eventName);
-    return this.#eventHandlersProvider.getEventListeners(stringifiedEventName);
+    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(stringifiedEventName);
+    return Array.from(eventHandlersGenerator);
   }
 
-  listenersAny(): EventHandler[] {
-    return this.#eventHandlersProvider.anyHandlers;
+  handlersAny(): EventHandler[] {
+    const anyEventsHandlersGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
+    return Array.from(anyEventsHandlersGenerator);
   }
 
   eventNames(): string[] {
-    return this.#eventHandlersProvider.eventNames;
+    const eventNamesGenerator = this.#eventHandlersProvider.getEventsNames();
+    return Array.from(eventNamesGenerator);
   }
 
-  emit(eventName: string, ...payload: unknown[]): void {
+  emit(eventName: string, payload: unknown): void {
     const stringifiedEventName = this.#stringifyEventName(eventName);
-    const handlers = this.#eventHandlersProvider.getHandlers(stringifiedEventName, this.#namespaceDelimiter);
+    const anyEventsHandlersGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
+    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(
+      stringifiedEventName,
+      this.#namespaceDelimiter,
+    );
 
-    for (const cb of handlers) {
-      cb(...payload);
+    for (const cb of eventHandlersGenerator) {
+      cb(payload);
+    }
+
+    for (const cb of anyEventsHandlersGenerator) {
+      cb(payload);
     }
   }
 }

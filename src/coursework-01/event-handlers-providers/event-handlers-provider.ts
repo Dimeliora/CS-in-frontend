@@ -8,15 +8,6 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
 
   maxListeners: number = 0;
 
-  get anyHandlers(): EventHandler[] {
-    return this.anyEventHandlers;
-  }
-
-  get eventNames(): string[] {
-    const keys = this.eventHandlersMap.keys();
-    return Array.from(keys);
-  }
-
   checkoutEventHandlersArray(eventName: string): EventHandler[] {
     if (!this.eventHandlersMap.has(eventName)) {
       this.eventHandlersMap.set(eventName, []);
@@ -84,9 +75,13 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     this.anyEventHandlers = this.anyEventHandlers.filter((cb) => cb !== handler);
   }
 
-  getEventListeners(eventName: string): EventHandler[] {
-    return this.eventHandlersMap.get(eventName) ?? [];
+  *getAnyEventsHandlers(): Generator<EventHandler, void, undefined> {
+    yield* this.anyEventHandlers;
   }
 
-  abstract getHandlers(eventName: string, delimiter?: string): Generator<EventHandler, any, unknown>;
+  *getEventsNames(): Generator<string, void, undefined> {
+    yield* this.eventHandlersMap.keys();
+  }
+
+  abstract getEventHandlers(eventName: string, delimiter?: string): Generator<EventHandler, void, undefined>;
 }
