@@ -1,10 +1,8 @@
-import EventNamespacesMap from './event-handlers-providers/event-namespaces-map.js';
-import EventMap from './event-handlers-providers/event-map.js';
+import EventHandlersProviderImpl from './event-handlers-providers/event-handlers-provider.js';
 import type {
   EventHandlersProvider,
   EventEmitterOptions,
   EventHandler,
-  EventName,
   EventUnsubscriber,
   HandlerOrder,
 } from './interfaces.js';
@@ -12,37 +10,35 @@ import type {
 export default class EventEmitter {
   #eventHandlersProvider: EventHandlersProvider;
 
-  #namespaces: boolean;
-
-  #namespaceDelimiter: string;
-
   #anyEventsFirst: boolean;
 
-  constructor({ namespaces = false, namespaceDelimiter = '.', anyEventsFirst = false }: EventEmitterOptions = {}) {
-    this.#namespaceDelimiter = namespaceDelimiter;
-    this.#namespaces = namespaces;
+  constructor({
+    namespaces = false,
+    namespaceDelimiter = '.',
+    maxListeners = 0,
+    relatedEventsTimeout = 0,
+    anyEventsFirst = false,
+  }: EventEmitterOptions = {}) {
     this.#anyEventsFirst = anyEventsFirst;
 
-    this.#eventHandlersProvider = this.#namespaces ? new EventNamespacesMap() : new EventMap();
+    const eventHandlersProviderOptions = { namespaces, namespaceDelimiter, maxListeners, relatedEventsTimeout };
+    this.#eventHandlersProvider = new EventHandlersProviderImpl(eventHandlersProviderOptions);
   }
 
-  #stringifyEventName(eventName: EventName): string {
-    return Array.isArray(eventName) ? eventName.join(this.#namespaceDelimiter) : eventName;
-  }
-
-  #createEventUnsubscriber(event: string, handler: EventHandler): EventUnsubscriber<this> {
+  #createEventUnsubscriber(event: string | string[], handler: EventHandler): EventUnsubscriber<this> {
+    const off = Array.isArray(event)
+      ? () => this.#eventHandlersProvider.removeRelatedEventsHandler(event)
+      : () => this.#eventHandlersProvider.removeEventHandler(event, handler);
     return {
       eventEmitter: this,
       event,
       handler,
-      off: () => {
-        this.#eventHandlersProvider.removeHandler(event, handler);
-      },
+      off,
     };
   }
 
   #subscribeForTimes(
-    eventName: EventName,
+    eventName: string,
     timesCount: number,
     handler: EventHandler,
     order: HandlerOrder = 'append',
@@ -68,64 +64,74 @@ export default class EventEmitter {
     return unsubscriber;
   }
 
+  getMaxListeners(): number {
+    return this.#eventHandlersProvider.getMaxListeners();
+  }
+
   setMaxListeners(maxListeners: number): void {
     this.#eventHandlersProvider.setMaxListeners(maxListeners);
   }
 
-  on(eventName: EventName, handler: EventHandler): EventUnsubscriber<this> {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
-    this.#eventHandlersProvider.addHandler(stringifiedEventName, handler);
-    return this.#createEventUnsubscriber(stringifiedEventName, handler);
+  on(eventName: string, handler: EventHandler): EventUnsubscriber<this> {
+    this.#eventHandlersProvider.addEventHandler(eventName, handler);
+    return this.#createEventUnsubscriber(eventName, handler);
   }
 
-  addListener(eventName: EventName, handler: EventHandler): EventUnsubscriber<this> {
+  addListener(eventName: string, handler: EventHandler): EventUnsubscriber<this> {
     return this.on(eventName, handler);
   }
 
-  prependListener(eventName: EventName, handler: EventHandler): EventUnsubscriber<this> {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
-    this.#eventHandlersProvider.addHandler(stringifiedEventName, handler, 'prepend');
-    return this.#createEventUnsubscriber(stringifiedEventName, handler);
+  prependListener(eventName: string, handler: EventHandler): EventUnsubscriber<this> {
+    this.#eventHandlersProvider.addEventHandler(eventName, handler, 'prepend');
+    return this.#createEventUnsubscriber(eventName, handler);
   }
 
-  off(eventName: EventName, handler: EventHandler): void {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
-    this.#eventHandlersProvider.removeHandler(stringifiedEventName, handler);
+  off(eventName: string, handler: EventHandler): void {
+    this.#eventHandlersProvider.removeEventHandler(eventName, handler);
   }
 
-  removeListener(eventName: EventName, handler: EventHandler): void {
+  removeListener(eventName: string, handler: EventHandler): void {
     this.off(eventName, handler);
   }
 
+  offEvent(eventName: string): boolean {
+    return this.#eventHandlersProvider.removeAllEventHandlers(eventName);
+  }
+
   any(handler: EventHandler) {
-    this.#eventHandlersProvider.addAnyHandler(handler);
+    this.#eventHandlersProvider.addAnyEventHandler(handler);
   }
 
   prependAny(handler: EventHandler) {
-    this.#eventHandlersProvider.addAnyHandler(handler, 'prepend');
+    this.#eventHandlersProvider.addAnyEventHandler(handler, 'prepend');
   }
 
   offAny(handler: EventHandler) {
-    this.#eventHandlersProvider.removeAnyHandler(handler);
+    this.#eventHandlersProvider.removeAnyEventHandler(handler);
   }
 
-  times(eventName: EventName, timesCount: number, handler: EventHandler) {
+  times(eventName: string, timesCount: number, handler: EventHandler) {
     return this.#subscribeForTimes(eventName, timesCount, handler);
   }
 
-  prependTimes(eventName: EventName, timesCount: number, handler: EventHandler) {
+  prependTimes(eventName: string, timesCount: number, handler: EventHandler) {
     return this.#subscribeForTimes(eventName, timesCount, handler, 'prepend');
   }
 
-  once(eventName: EventName, handler: EventHandler) {
+  once(eventName: string, handler: EventHandler) {
     return this.#subscribeForTimes(eventName, 1, handler);
   }
 
-  prependOnce(eventName: EventName, handler: EventHandler) {
+  prependOnce(eventName: string, handler: EventHandler) {
     return this.#subscribeForTimes(eventName, 1, handler, 'prepend');
   }
 
-  await(eventName: EventName): Promise<unknown> {
+  all(events: string[], handler: EventHandler): EventUnsubscriber<this> {
+    this.#eventHandlersProvider.addRelatedEventsHandler(events, handler);
+    return this.#createEventUnsubscriber(events, handler);
+  }
+
+  await(eventName: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
       this.on(eventName, (payload: unknown) => {
         if (payload instanceof Error) {
@@ -137,14 +143,8 @@ export default class EventEmitter {
     });
   }
 
-  offEvent(eventName: EventName): boolean {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
-    return this.#eventHandlersProvider.removeAllEventHandlers(stringifiedEventName);
-  }
-
-  handlers(eventName: EventName): EventHandler[] {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
-    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(stringifiedEventName);
+  handlers(eventName: string): EventHandler[] {
+    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(eventName);
     return Array.from(eventHandlersGenerator);
   }
 
@@ -159,12 +159,9 @@ export default class EventEmitter {
   }
 
   emit(eventName: string, payload: unknown): void {
-    const stringifiedEventName = this.#stringifyEventName(eventName);
     const anyEventsHandlersGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
-    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(
-      stringifiedEventName,
-      this.#namespaceDelimiter,
-    );
+
+    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(eventName);
 
     for (const cb of eventHandlersGenerator) {
       cb(payload);
@@ -173,5 +170,7 @@ export default class EventEmitter {
     for (const cb of anyEventsHandlersGenerator) {
       cb(payload);
     }
+
+    this.#eventHandlersProvider.handleRelatedEvents(eventName, payload);
   }
 }

@@ -1,12 +1,40 @@
 /* eslint-disable no-console */
-import type { EventHandlersProvider, EventHandler, HandlerOrder } from '../interfaces.js';
+import wildcardMatcher from '../helpers/wildcard-matcher.js';
+import type {
+  EventHandlersProvider,
+  EventHandler,
+  EventHandlersProviderOptions,
+  HandlerOrder,
+  RelatedEvents,
+  RelatedEventData,
+} from '../interfaces.js';
 
-export default abstract class AbstractEventHandlersProvider implements EventHandlersProvider {
+export default class EventHandlersProviderImpl implements EventHandlersProvider {
   eventHandlersMap = new Map<string, EventHandler[]>();
+
+  relatedEventsHandlersMap = new Map<string[], RelatedEvents>();
 
   anyEventHandlers: EventHandler[] = [];
 
-  maxListeners: number = 0;
+  namespaces: boolean;
+
+  namespaceDelimiter: string;
+
+  maxListeners: number;
+
+  relatedEventsTimeout: number;
+
+  constructor({
+    namespaces = false,
+    namespaceDelimiter = '.',
+    maxListeners = 0,
+    relatedEventsTimeout = 0,
+  }: EventHandlersProviderOptions = {}) {
+    this.namespaces = namespaces;
+    this.namespaceDelimiter = namespaceDelimiter;
+    this.maxListeners = maxListeners;
+    this.relatedEventsTimeout = relatedEventsTimeout;
+  }
 
   checkoutEventHandlersArray(eventName: string): EventHandler[] {
     if (!this.eventHandlersMap.has(eventName)) {
@@ -26,6 +54,14 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     }
   }
 
+  isEventNameMatches(eventName: string, firedEvent: string): boolean {
+    return this.namespaces ? wildcardMatcher(firedEvent, eventName, this.namespaceDelimiter) : eventName === firedEvent;
+  }
+
+  getMaxListeners(): number {
+    return this.maxListeners;
+  }
+
   setMaxListeners(maxListeners: number) {
     if (maxListeners < 0) {
       throw new RangeError('Amount of listeners must be greater or equal 0');
@@ -34,7 +70,7 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     this.maxListeners = maxListeners;
   }
 
-  addHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
+  addEventHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
     const eventHandlers = this.checkoutEventHandlersArray(eventName);
     if (order === 'append') {
       eventHandlers!.push(handler);
@@ -45,7 +81,7 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     this.checkEventListenersAmount(eventName);
   }
 
-  removeHandler(eventName: string, handler: EventHandler): void {
+  removeEventHandler(eventName: string, handler: EventHandler): void {
     const eventHandlers = this.eventHandlersMap.get(eventName);
     if (!eventHandlers) return;
 
@@ -61,7 +97,7 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     return this.eventHandlersMap.delete(eventName);
   }
 
-  addAnyHandler(handler: EventHandler, order: HandlerOrder = 'append'): void {
+  addAnyEventHandler(handler: EventHandler, order: HandlerOrder = 'append'): void {
     if (order === 'append') {
       this.anyEventHandlers.push(handler);
     } else {
@@ -71,8 +107,44 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     this.checkEventListenersAmount();
   }
 
-  removeAnyHandler(handler: EventHandler): void {
+  removeAnyEventHandler(handler: EventHandler): void {
     this.anyEventHandlers = this.anyEventHandlers.filter((cb) => cb !== handler);
+  }
+
+  addRelatedEventsHandler(events: string[], handler: EventHandler): void {
+    const relatedEvents: RelatedEvents = { handler, eventsData: Object.create(null) };
+    this.relatedEventsHandlersMap.set(events, relatedEvents);
+  }
+
+  removeRelatedEventsHandler(events: string[]): void {
+    this.relatedEventsHandlersMap.delete(events);
+  }
+
+  handleRelatedEvents(eventName: string, payload: unknown): void {
+    const matchedOfRegisteredRelatedEvents = Array.from(this.relatedEventsHandlersMap.keys()).filter((relatedEvents) =>
+      relatedEvents.some((eventItem) => this.isEventNameMatches(eventItem, eventName)),
+    );
+
+    for (const relatedEventsList of matchedOfRegisteredRelatedEvents) {
+      const relatedEventsData = this.relatedEventsHandlersMap.get(relatedEventsList);
+
+      if (relatedEventsData == null) return;
+
+      const firedEventData: RelatedEventData = { payload, firedTimestamp: Date.now() };
+      relatedEventsData.eventsData[eventName] = firedEventData;
+
+      const eventData = Object.values(relatedEventsData.eventsData);
+      const areAllRelatedEventsFired = eventData.length === relatedEventsList.length;
+      const areEventPayloadsRecent =
+        this.relatedEventsTimeout === 0 ||
+        eventData.every(({ firedTimestamp }) => Date.now() - firedTimestamp < this.relatedEventsTimeout);
+
+      if (areEventPayloadsRecent && areAllRelatedEventsFired) {
+        const payloadsList = eventData.map((data) => data.payload);
+        relatedEventsData.handler(...payloadsList);
+        relatedEventsData.eventsData = Object.create(null);
+      }
+    }
   }
 
   *getAnyEventsHandlers(): Generator<EventHandler, void, undefined> {
@@ -83,5 +155,17 @@ export default abstract class AbstractEventHandlersProvider implements EventHand
     yield* this.eventHandlersMap.keys();
   }
 
-  abstract getEventHandlers(eventName: string, delimiter?: string): Generator<EventHandler, void, undefined>;
+  *getEventHandlers(eventName: string): Generator<EventHandler, void, undefined> {
+    if (this.namespaces) {
+      const eventHandlersMapIterator = this.eventHandlersMap.entries();
+      for (const [event, handlers] of eventHandlersMapIterator) {
+        if (wildcardMatcher(eventName, event, this.namespaceDelimiter)) {
+          yield* handlers;
+        }
+      }
+    } else {
+      const eventHandlers = this.eventHandlersMap.get(eventName) ?? [];
+      yield* eventHandlers;
+    }
+  }
 }
