@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import wildcardMatcher from '../helpers/wildcard-matcher.js';
+import wildcardMatcher from '../helpers/index.js';
 import type {
   EventHandlersProvider,
   EventHandler,
@@ -7,12 +7,15 @@ import type {
   HandlerOrder,
   RelatedEvents,
   RelatedEventData,
+  EventStreamHandlers,
 } from '../interfaces.js';
 
 export default class EventHandlersProviderImpl implements EventHandlersProvider {
   eventHandlersMap = new Map<string, EventHandler[]>();
 
   relatedEventsHandlersMap = new Map<string[], RelatedEvents>();
+
+  eventStreamsResolversMap = new Map<string, EventStreamHandlers>();
 
   anyEventHandlers: EventHandler[] = [];
 
@@ -112,7 +115,10 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   addRelatedEventsHandler(events: string[], handler: EventHandler): void {
-    const relatedEvents: RelatedEvents = { handler, eventsData: Object.create(null) };
+    const relatedEvents: RelatedEvents = {
+      handler,
+      eventsData: Object.create(null),
+    };
     this.relatedEventsHandlersMap.set(events, relatedEvents);
   }
 
@@ -120,7 +126,39 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     this.relatedEventsHandlersMap.delete(events);
   }
 
-  handleRelatedEvents(eventName: string, payload: unknown): void {
+  addEventStream(eventName: string): AsyncIterableIterator<unknown> {
+    this.eventStreamsResolversMap.set(eventName, {
+      resolver: () => {},
+      unsubscriber: () => {},
+    });
+
+    return {
+      next: async () =>
+        new Promise((resolve) => {
+          this.eventStreamsResolversMap.set(eventName, {
+            resolver(payload: unknown) {
+              resolve({ done: false, value: payload });
+            },
+            unsubscriber() {
+              resolve({ done: true, value: undefined });
+            },
+          });
+        }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+    };
+  }
+
+  removeEventStream(eventName: string): void {
+    const eventStreamHandlers = this.eventStreamsResolversMap.get(eventName);
+    if (eventStreamHandlers != null) {
+      eventStreamHandlers.unsubscriber();
+      this.eventStreamsResolversMap.delete(eventName);
+    }
+  }
+
+  *handleRelatedEvents(eventName: string, payload: unknown): Generator<EventHandler> {
     const matchedOfRegisteredRelatedEvents = Array.from(this.relatedEventsHandlersMap.keys()).filter((relatedEvents) =>
       relatedEvents.some((eventItem) => this.isEventNameMatches(eventItem, eventName)),
     );
@@ -130,18 +168,23 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
 
       if (relatedEventsData == null) return;
 
-      const firedEventData: RelatedEventData = { payload, firedTimestamp: Date.now() };
+      const firedEventData: RelatedEventData = {
+        payload,
+        firedTimestamp: Date.now(),
+      };
       relatedEventsData.eventsData[eventName] = firedEventData;
 
       const eventData = Object.values(relatedEventsData.eventsData);
       const areAllRelatedEventsFired = eventData.length === relatedEventsList.length;
       const areEventPayloadsRecent =
-        this.relatedEventsTimeout === 0 ||
+        this.relatedEventsTimeout <= 0 ||
         eventData.every(({ firedTimestamp }) => Date.now() - firedTimestamp < this.relatedEventsTimeout);
 
       if (areEventPayloadsRecent && areAllRelatedEventsFired) {
         const payloadsList = eventData.map((data) => data.payload);
-        relatedEventsData.handler(...payloadsList);
+
+        yield () => relatedEventsData.handler(...payloadsList);
+
         relatedEventsData.eventsData = Object.create(null);
       }
     }
@@ -166,6 +209,20 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     } else {
       const eventHandlers = this.eventHandlersMap.get(eventName) ?? [];
       yield* eventHandlers;
+    }
+  }
+
+  *getEventStreamResolver(eventName: string): Generator<EventHandler, void, undefined> {
+    if (this.namespaces) {
+      const eventsStremResolversMapIterator = this.eventStreamsResolversMap.entries();
+      for (const [event, eventStreamHandlers] of eventsStremResolversMapIterator) {
+        if (wildcardMatcher(eventName, event, this.namespaceDelimiter)) {
+          yield eventStreamHandlers.resolver;
+        }
+      }
+    } else {
+      const eventStreamHandlers = this.eventStreamsResolversMap.get(eventName);
+      if (eventStreamHandlers != null) yield eventStreamHandlers.resolver;
     }
   }
 }

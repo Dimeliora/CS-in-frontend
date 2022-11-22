@@ -1,27 +1,40 @@
-import EventHandlersProviderImpl from './event-handlers-providers/event-handlers-provider.js';
+import EventHandlersProviderImpl from '../event-handlers-providers/index.js';
+import seq from '../iterator-helpers/index.js';
 import type {
   EventHandlersProvider,
   EventEmitterOptions,
   EventHandler,
   EventUnsubscriber,
   HandlerOrder,
-} from './interfaces.js';
+} from '../interfaces.js';
 
 export default class EventEmitter {
   #eventHandlersProvider: EventHandlersProvider;
 
-  #anyEventsFirst: boolean;
+  #anyFirst: boolean;
+
+  #relatedFirst: boolean;
 
   constructor({
     namespaces = false,
     namespaceDelimiter = '.',
     maxListeners = 0,
     relatedEventsTimeout = 0,
-    anyEventsFirst = false,
+    anyFirst = false,
+    relatedFirst = false,
   }: EventEmitterOptions = {}) {
-    this.#anyEventsFirst = anyEventsFirst;
+    this.#anyFirst = anyFirst;
+    this.#relatedFirst = relatedFirst;
+    if (relatedFirst) {
+      this.#anyFirst = false;
+    }
 
-    const eventHandlersProviderOptions = { namespaces, namespaceDelimiter, maxListeners, relatedEventsTimeout };
+    const eventHandlersProviderOptions = {
+      namespaces,
+      namespaceDelimiter,
+      maxListeners,
+      relatedEventsTimeout,
+    };
     this.#eventHandlersProvider = new EventHandlersProviderImpl(eventHandlersProviderOptions);
   }
 
@@ -62,6 +75,22 @@ export default class EventEmitter {
         ? this.addListener(eventName, wrappedHandler)
         : this.prependListener(eventName, wrappedHandler);
     return unsubscriber;
+  }
+
+  #getComposedEventHandlers(eventName: string, payload: unknown): IterableIterator<EventHandler> {
+    const anyGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
+    const eventGenerator = this.#eventHandlersProvider.getEventHandlers(eventName);
+    const relatedGenerator = this.#eventHandlersProvider.handleRelatedEvents(eventName, payload);
+
+    let emitEventSequence = seq(eventGenerator, anyGenerator, relatedGenerator);
+    if (this.#anyFirst) {
+      emitEventSequence = seq(anyGenerator, eventGenerator, relatedGenerator);
+    }
+    if (this.#relatedFirst) {
+      emitEventSequence = seq(relatedGenerator, eventGenerator, anyGenerator);
+    }
+
+    return emitEventSequence;
   }
 
   getMaxListeners(): number {
@@ -131,16 +160,12 @@ export default class EventEmitter {
     return this.#createEventUnsubscriber(events, handler);
   }
 
-  await(eventName: string): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      this.on(eventName, (payload: unknown) => {
-        if (payload instanceof Error) {
-          reject(payload);
-        } else {
-          resolve(payload);
-        }
-      });
-    });
+  stream(eventName: string): AsyncIterableIterator<unknown> {
+    return this.#eventHandlersProvider.addEventStream(eventName);
+  }
+
+  offStream(eventName: string): void {
+    this.#eventHandlersProvider.removeEventStream(eventName);
   }
 
   handlers(eventName: string): EventHandler[] {
@@ -159,18 +184,28 @@ export default class EventEmitter {
   }
 
   emit(eventName: string, payload: unknown): void {
-    const anyEventsHandlersGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
-
-    const eventHandlersGenerator = this.#eventHandlersProvider.getEventHandlers(eventName);
-
-    for (const cb of eventHandlersGenerator) {
+    const emitEventSequence = this.#getComposedEventHandlers(eventName, payload);
+    for (const cb of emitEventSequence) {
       cb(payload);
     }
 
-    for (const cb of anyEventsHandlersGenerator) {
-      cb(payload);
-    }
+    const streamResolvers = this.#eventHandlersProvider.getEventStreamResolver(eventName);
+    setTimeout(() => {
+      for (const cb of streamResolvers) {
+        cb(payload);
+      }
+    });
+  }
 
-    this.#eventHandlersProvider.handleRelatedEvents(eventName, payload);
+  await(eventName: string): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      this.on(eventName, (payload: unknown) => {
+        if (payload instanceof Error) {
+          reject(payload);
+        } else {
+          resolve(payload);
+        }
+      });
+    });
   }
 }

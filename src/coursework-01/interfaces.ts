@@ -3,7 +3,8 @@ export interface EventEmitterOptions {
   namespaceDelimiter?: string;
   maxListeners?: number;
   relatedEventsTimeout?: number;
-  anyEventsFirst?: boolean;
+  anyFirst?: boolean;
+  relatedFirst?: boolean;
 }
 
 export interface EventHandlersProviderOptions {
@@ -28,10 +29,14 @@ export interface EventHandlersProvider {
   addRelatedEventsHandler(events: string[], handler: EventHandler): void;
   removeRelatedEventsHandler(events: string[]): void;
 
+  addEventStream(eventName: string): AsyncIterableIterator<unknown>;
+  removeEventStream(eventName: string): void;
+
   getEventHandlers(eventName: string, delimiter?: string): Generator<EventHandler, void, undefined>;
   getAnyEventsHandlers(): Generator<EventHandler, void, undefined>;
+  handleRelatedEvents(eventName: string, payload: unknown): Generator<EventHandler>;
+  getEventStreamResolver(eventName: string): Generator<EventHandler, void, undefined>;
   getEventsNames(): Generator<string, void, undefined>;
-  handleRelatedEvents(eventName: string, payload: unknown): void;
 
   getMaxListeners(): number;
   setMaxListeners(max: number): void;
@@ -52,4 +57,9 @@ export interface RelatedEvents {
 export interface RelatedEventData {
   payload: unknown;
   firedTimestamp: number;
+}
+
+export interface EventStreamHandlers {
+  resolver(payload: unknown): void;
+  unsubscriber(): void;
 }

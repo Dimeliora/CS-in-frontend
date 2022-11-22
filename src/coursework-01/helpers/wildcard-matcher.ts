@@ -1,11 +1,7 @@
 /* eslint-disable no-constant-condition */
-function normalizeWildcardTemplate(template: string): string {
-  return template.replace(/(?<=\*{2})(.\*)+|(\*.)+(?=\*{2})/g, '');
-}
-
 export default function wildcardMatcher(targetString: string, template: string, delimiter: string): boolean {
   const target = targetString.split(delimiter);
-  const key = normalizeWildcardTemplate(template).split(delimiter);
+  const key = template.split(delimiter);
 
   let state: 'regular' | 'deep' = 'regular';
   const keyIter = key[Symbol.iterator]();
