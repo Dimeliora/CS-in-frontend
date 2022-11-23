@@ -56,7 +56,7 @@
 
 - [`on(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#oneventname-string-handler-eventhandler-eventunsubscriber)
 - [`addListener(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#addlistenereventname-string-handler-eventhandler-eventunsubscriber)
-- [`prependListener(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#prependlistenereventname-string-handler-eventhandler-eventunsubscriberthis)
+- [`prependListener(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#prependlistenereventname-string-handler-eventhandler-eventunsubscriber)
 - [`off(eventName: string, handler: EventHandler): void`](#offeventname-string-handler-eventhandler-void)
 - [`removeListener(eventName: string, handler: EventHandler): void`](#removelistenereventname-string-handler-eventhandler-void)
 - [`removeEvent(eventName: string): boolean`](#removeeventeventname-string-boolean)
@@ -65,7 +65,7 @@
 - [`removeAny(handler: EventHandler): void`](#removeanyhandler-eventhandler-void)
 - [`times(eventName: string, timesCount: number, handler: EventHandler): EventUnsubscriber<this>`](#timeseventname-string-timescount-number-handler-eventhandler-eventunsubscriber)
 - [`prependTimes(eventName: string, timesCount: number, handler: EventHandler): EventUnsubscriber<this>`](#prependtimeseventname-string-timescount-number-handler-eventhandler-eventunsubscriber)
-- [`once(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#onceeventname-string-handler-eventhandler-eventunsubscriberthis)
+- [`once(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#onceeventname-string-handler-eventhandler-eventunsubscriber)
 - [`prependOnce(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#prependonceeventname-string-handler-eventhandler-eventunsubscriber)
 - [`allOf(events: string[], handler: RelatedEventsHandler): EventUnsubscriber<this>`](#allofevents-string-handler-relatedeventshandler-eventunsubscriber)
 - [`removeAllOf(events: string[]): void`](#removeallofevents-string-void)
