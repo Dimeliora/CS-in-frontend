@@ -394,5 +394,8 @@ describe('Implementation of Event Emitter (EE)', () => {
 
     // @ts-expect-error
     expect(() => ee.setMaxListeners()).toThrowError('Amount of listeners must be greater or equal 0');
+
+    // @ts-expect-error
+    expect(() => ee.setRelatedEventsTimeout()).toThrowError('Timeout value must be greater or equal 0');
   });
 });

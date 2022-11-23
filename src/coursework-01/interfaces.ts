@@ -44,7 +44,9 @@ export interface EventHandlersProvider {
   getEventStreamNames(): Generator<string, void, undefined>;
 
   getMaxListeners(): number;
-  setMaxListeners(max: number): void;
+  setMaxListeners(maxListeners: number): void;
+  getRelatedEventsTimeout(): number;
+  setRelatedEventsTimeout(timeout: number): void;
 }
 
 export interface EventUnsubscriber<T> {

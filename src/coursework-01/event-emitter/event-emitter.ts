@@ -1,5 +1,5 @@
-import EventHandlersProviderImpl from '../event-handlers-provider/event-handlers-provider';
-import seq from '../iterator-helpers/seq';
+import EventHandlersProviderImpl from '../event-handlers-provider/index.js';
+import seq from '../iterator-helpers/index.js';
 import type {
   EventHandlersProvider,
   EventEmitterOptions,
@@ -19,7 +19,7 @@ export default class EventEmitter {
   constructor({
     namespaces = false,
     namespaceDelimiter = '.',
-    maxListeners = 0,
+    maxListeners = 10,
     relatedEventsTimeout = 0,
     anyFirst = false,
     relatedFirst = false,
@@ -112,6 +112,14 @@ export default class EventEmitter {
 
   setMaxListeners(maxListeners: number): void {
     this.#eventHandlersProvider.setMaxListeners(maxListeners);
+  }
+
+  getRelatedEventsTimeout(): number {
+    return this.#eventHandlersProvider.getRelatedEventsTimeout();
+  }
+
+  setRelatedEventsTimeout(timeout: number): void {
+    this.#eventHandlersProvider.setRelatedEventsTimeout(timeout);
   }
 
   on(eventName: string, handler: EventHandler): EventUnsubscriber<this> {

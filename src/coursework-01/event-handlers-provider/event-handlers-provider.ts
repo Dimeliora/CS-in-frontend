@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import wildcardMatcher from '../helpers/wildcard-matcher';
+import wildcardMatcher from '../helpers/index.js';
 import type {
   EventHandlersProvider,
   EventHandler,
@@ -72,6 +72,18 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     }
 
     this.maxListeners = maxListeners;
+  }
+
+  getRelatedEventsTimeout(): number {
+    return this.relatedEventsTimeout;
+  }
+
+  setRelatedEventsTimeout(timeout: number): void {
+    if (timeout == null || timeout < 0) {
+      throw new RangeError('Timeout value must be greater or equal 0');
+    }
+
+    this.relatedEventsTimeout = timeout;
   }
 
   addEventHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
