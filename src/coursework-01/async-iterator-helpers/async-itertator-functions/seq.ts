@@ -1,4 +1,4 @@
-import type { ExtractAsyncIterablesType } from './async-iterator-helpers.types.js';
+import type { ExtractAsyncIterablesType } from '../async-iterator-helpers.types.js';
 
 export default function seq<T extends AsyncIterable<any>[]>(
   ...iterables: T

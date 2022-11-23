@@ -14,7 +14,9 @@ export interface EventHandlersProviderOptions {
   relatedEventsTimeout?: number;
 }
 
-export type EventHandler = (payload: unknown) => void;
+export type EventHandler = (payload: any) => void;
+
+export type RelatedEventsHandler = (...payloads: any[]) => void;
 
 export type HandlerOrder = 'append' | 'prepend';
 
@@ -50,16 +52,16 @@ export interface EventUnsubscriber<T> {
 }
 
 export interface RelatedEvents {
-  handler: (...payloads: unknown[]) => void;
+  handler: RelatedEventsHandler;
   eventsData: Record<string, RelatedEventData>;
 }
 
 export interface RelatedEventData {
-  payload: unknown;
+  payload: any;
   firedTimestamp: number;
 }
 
 export interface EventStreamHandlers {
-  resolver(payload: unknown): void;
+  resolver(payload: any): void;
   unsubscriber(): void;
 }

@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
-import wildcardMatcher from '../helpers/index.js';
+import wildcardMatcher from '../helpers/wildcard-matcher';
 import type {
   EventHandlersProvider,
   EventHandler,
+  RelatedEventsHandler,
   EventHandlersProviderOptions,
   HandlerOrder,
   RelatedEvents,
@@ -52,7 +53,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     const event = eventName ?? 'any';
     if (this.maxListeners !== 0 && handlers.length > this.maxListeners) {
       console.warn(
-        `Possible EventEmitter memory leak detected for ${event} event. Use emitter.setMaxListeners() to increase limit`,
+        `Possible EventEmitter memory leak detected for event: ${event}. Use emitter.setMaxListeners() to increase limit`,
       );
     }
   }
@@ -114,7 +115,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     this.anyEventHandlers = this.anyEventHandlers.filter((cb) => cb !== handler);
   }
 
-  addRelatedEventsHandler(events: string[], handler: EventHandler): void {
+  addRelatedEventsHandler(events: string[], handler: RelatedEventsHandler): void {
     const relatedEvents: RelatedEvents = {
       handler,
       eventsData: Object.create(null),
@@ -126,7 +127,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     this.relatedEventsHandlersMap.delete(events);
   }
 
-  addEventStream(eventName: string): AsyncIterableIterator<unknown> {
+  addEventStream(eventName: string): AsyncIterableIterator<any> {
     this.eventStreamsResolversMap.set(eventName, {
       resolver: () => {},
       unsubscriber: () => {},
@@ -136,7 +137,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
       next: async () =>
         new Promise((resolve) => {
           this.eventStreamsResolversMap.set(eventName, {
-            resolver(payload: unknown) {
+            resolver(payload: any) {
               resolve({ done: false, value: payload });
             },
             unsubscriber() {
@@ -158,7 +159,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     }
   }
 
-  *handleRelatedEvents(eventName: string, payload: unknown): Generator<EventHandler> {
+  *handleRelatedEvents(eventName: string, payload: any): Generator<EventHandler> {
     const matchedOfRegisteredRelatedEvents = Array.from(this.relatedEventsHandlersMap.keys()).filter((relatedEvents) =>
       relatedEvents.some((eventItem) => this.isEventNameMatches(eventItem, eventName)),
     );

@@ -1,9 +1,10 @@
-import EventHandlersProviderImpl from '../event-handlers-providers/index.js';
-import seq from '../iterator-helpers/index.js';
+import EventHandlersProviderImpl from '../event-handlers-provider/event-handlers-provider';
+import seq from '../iterator-helpers/seq';
 import type {
   EventHandlersProvider,
   EventEmitterOptions,
   EventHandler,
+  RelatedEventsHandler,
   EventUnsubscriber,
   HandlerOrder,
 } from '../interfaces.js';
@@ -62,7 +63,7 @@ export default class EventEmitter {
 
     let handlerCallsCount = 0;
     let unsubscriber: EventUnsubscriber<this>;
-    const wrappedHandler = (payload: unknown) => {
+    const wrappedHandler = (payload: any) => {
       handler(payload);
       handlerCallsCount += 1;
       if (handlerCallsCount >= timesCount) {
@@ -77,7 +78,7 @@ export default class EventEmitter {
     return unsubscriber;
   }
 
-  #getComposedEventHandlers(eventName: string, payload: unknown): IterableIterator<EventHandler> {
+  #getComposedEventHandlers(eventName: string, payload: any): IterableIterator<EventHandler> {
     const anyGenerator = this.#eventHandlersProvider.getAnyEventsHandlers();
     const eventGenerator = this.#eventHandlersProvider.getEventHandlers(eventName);
     const relatedGenerator = this.#eventHandlersProvider.handleRelatedEvents(eventName, payload);
@@ -123,48 +124,52 @@ export default class EventEmitter {
     this.off(eventName, handler);
   }
 
-  offEvent(eventName: string): boolean {
+  removeEvent(eventName: string): boolean {
     return this.#eventHandlersProvider.removeAllEventHandlers(eventName);
   }
 
-  any(handler: EventHandler) {
+  any(handler: EventHandler): void {
     this.#eventHandlersProvider.addAnyEventHandler(handler);
   }
 
-  prependAny(handler: EventHandler) {
+  prependAny(handler: EventHandler): void {
     this.#eventHandlersProvider.addAnyEventHandler(handler, 'prepend');
   }
 
-  offAny(handler: EventHandler) {
+  removeAny(handler: EventHandler): void {
     this.#eventHandlersProvider.removeAnyEventHandler(handler);
   }
 
-  times(eventName: string, timesCount: number, handler: EventHandler) {
+  times(eventName: string, timesCount: number, handler: EventHandler): EventUnsubscriber<this> {
     return this.#subscribeForTimes(eventName, timesCount, handler);
   }
 
-  prependTimes(eventName: string, timesCount: number, handler: EventHandler) {
+  prependTimes(eventName: string, timesCount: number, handler: EventHandler): EventUnsubscriber<this> {
     return this.#subscribeForTimes(eventName, timesCount, handler, 'prepend');
   }
 
-  once(eventName: string, handler: EventHandler) {
+  once(eventName: string, handler: EventHandler): EventUnsubscriber<this> {
     return this.#subscribeForTimes(eventName, 1, handler);
   }
 
-  prependOnce(eventName: string, handler: EventHandler) {
+  prependOnce(eventName: string, handler: EventHandler): EventUnsubscriber<this> {
     return this.#subscribeForTimes(eventName, 1, handler, 'prepend');
   }
 
-  all(events: string[], handler: EventHandler): EventUnsubscriber<this> {
+  allOf(events: string[], handler: RelatedEventsHandler): EventUnsubscriber<this> {
     this.#eventHandlersProvider.addRelatedEventsHandler(events, handler);
     return this.#createEventUnsubscriber(events, handler);
   }
 
-  stream(eventName: string): AsyncIterableIterator<unknown> {
+  removeAllOf(events: string[]): void {
+    this.#eventHandlersProvider.removeRelatedEventsHandler(events);
+  }
+
+  stream(eventName: string): AsyncIterableIterator<any> {
     return this.#eventHandlersProvider.addEventStream(eventName);
   }
 
-  offStream(eventName: string): void {
+  removeStream(eventName: string): void {
     this.#eventHandlersProvider.removeEventStream(eventName);
   }
 
@@ -183,7 +188,7 @@ export default class EventEmitter {
     return Array.from(eventNamesGenerator);
   }
 
-  emit(eventName: string, payload: unknown): void {
+  emit(eventName: string, payload: any): void {
     const emitEventSequence = this.#getComposedEventHandlers(eventName, payload);
     for (const cb of emitEventSequence) {
       cb(payload);
@@ -197,9 +202,9 @@ export default class EventEmitter {
     });
   }
 
-  await(eventName: string): Promise<unknown> {
+  await(eventName: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.on(eventName, (payload: unknown) => {
+      this.on(eventName, (payload: any) => {
         if (payload instanceof Error) {
           reject(payload);
         } else {
