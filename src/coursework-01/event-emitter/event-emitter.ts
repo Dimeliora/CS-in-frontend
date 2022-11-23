@@ -24,6 +24,14 @@ export default class EventEmitter {
     anyFirst = false,
     relatedFirst = false,
   }: EventEmitterOptions = {}) {
+    if (maxListeners < 0) {
+      throw new RangeError('Amount of listeners must be greater or equal 0');
+    }
+
+    if (relatedEventsTimeout < 0) {
+      throw new RangeError('Timeout value must be greater or equal 0');
+    }
+
     this.#anyFirst = anyFirst;
     this.#relatedFirst = relatedFirst;
     if (relatedFirst) {
@@ -59,6 +67,10 @@ export default class EventEmitter {
   ): EventUnsubscriber<this> {
     if (timesCount <= 0) {
       throw new RangeError('Handler call times counter must be greater than 0');
+    }
+
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
     }
 
     let handlerCallsCount = 0;
@@ -186,6 +198,16 @@ export default class EventEmitter {
   eventNames(): string[] {
     const eventNamesGenerator = this.#eventHandlersProvider.getEventsNames();
     return Array.from(eventNamesGenerator);
+  }
+
+  relatedEventNames(): string[][] {
+    const relatedEventNamesGenerator = this.#eventHandlersProvider.getRelatedEventNames();
+    return Array.from(relatedEventNamesGenerator);
+  }
+
+  eventStreamNames(): string[] {
+    const eventStreamNamesGenerator = this.#eventHandlersProvider.getEventStreamNames();
+    return Array.from(eventStreamNamesGenerator);
   }
 
   emit(eventName: string, payload: any): void {

@@ -31,14 +31,17 @@ export interface EventHandlersProvider {
   addRelatedEventsHandler(events: string[], handler: EventHandler): void;
   removeRelatedEventsHandler(events: string[]): void;
 
-  addEventStream(eventName: string): AsyncIterableIterator<unknown>;
+  addEventStream(eventName: string): AsyncIterableIterator<any>;
   removeEventStream(eventName: string): void;
 
   getEventHandlers(eventName: string, delimiter?: string): Generator<EventHandler, void, undefined>;
   getAnyEventsHandlers(): Generator<EventHandler, void, undefined>;
-  handleRelatedEvents(eventName: string, payload: unknown): Generator<EventHandler>;
+  handleRelatedEvents(eventName: string, payload: any): Generator<EventHandler>;
   getEventStreamResolver(eventName: string): Generator<EventHandler, void, undefined>;
+
   getEventsNames(): Generator<string, void, undefined>;
+  getRelatedEventNames(): Generator<string[], void, undefined>;
+  getEventStreamNames(): Generator<string, void, undefined>;
 
   getMaxListeners(): number;
   setMaxListeners(max: number): void;

@@ -67,7 +67,7 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   setMaxListeners(maxListeners: number) {
-    if (maxListeners < 0) {
+    if (maxListeners == null || maxListeners < 0) {
       throw new RangeError('Amount of listeners must be greater or equal 0');
     }
 
@@ -75,6 +75,10 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   addEventHandler(eventName: string, handler: EventHandler, order: HandlerOrder = 'append'): void {
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
+    }
+
     const eventHandlers = this.checkoutEventHandlersArray(eventName);
     if (order === 'append') {
       eventHandlers!.push(handler);
@@ -86,6 +90,10 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   removeEventHandler(eventName: string, handler: EventHandler): void {
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
+    }
+
     const eventHandlers = this.eventHandlersMap.get(eventName);
     if (!eventHandlers) return;
 
@@ -102,6 +110,10 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   addAnyEventHandler(handler: EventHandler, order: HandlerOrder = 'append'): void {
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
+    }
+
     if (order === 'append') {
       this.anyEventHandlers.push(handler);
     } else {
@@ -112,10 +124,18 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
   }
 
   removeAnyEventHandler(handler: EventHandler): void {
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
+    }
+
     this.anyEventHandlers = this.anyEventHandlers.filter((cb) => cb !== handler);
   }
 
   addRelatedEventsHandler(events: string[], handler: RelatedEventsHandler): void {
+    if (typeof handler !== 'function') {
+      throw new TypeError('Event handler must be a type of function');
+    }
+
     const relatedEvents: RelatedEvents = {
       handler,
       eventsData: Object.create(null),
@@ -159,6 +179,24 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     }
   }
 
+  *getEventHandlers(eventName: string): Generator<EventHandler, void, undefined> {
+    if (this.namespaces) {
+      const eventHandlersMapIterator = this.eventHandlersMap.entries();
+      for (const [event, handlers] of eventHandlersMapIterator) {
+        if (wildcardMatcher(eventName, event, this.namespaceDelimiter)) {
+          yield* handlers;
+        }
+      }
+    } else {
+      const eventHandlers = this.eventHandlersMap.get(eventName) ?? [];
+      yield* eventHandlers;
+    }
+  }
+
+  *getAnyEventsHandlers(): Generator<EventHandler, void, undefined> {
+    yield* this.anyEventHandlers;
+  }
+
   *handleRelatedEvents(eventName: string, payload: any): Generator<EventHandler> {
     const matchedOfRegisteredRelatedEvents = Array.from(this.relatedEventsHandlersMap.keys()).filter((relatedEvents) =>
       relatedEvents.some((eventItem) => this.isEventNameMatches(eventItem, eventName)),
@@ -191,28 +229,6 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
     }
   }
 
-  *getAnyEventsHandlers(): Generator<EventHandler, void, undefined> {
-    yield* this.anyEventHandlers;
-  }
-
-  *getEventsNames(): Generator<string, void, undefined> {
-    yield* this.eventHandlersMap.keys();
-  }
-
-  *getEventHandlers(eventName: string): Generator<EventHandler, void, undefined> {
-    if (this.namespaces) {
-      const eventHandlersMapIterator = this.eventHandlersMap.entries();
-      for (const [event, handlers] of eventHandlersMapIterator) {
-        if (wildcardMatcher(eventName, event, this.namespaceDelimiter)) {
-          yield* handlers;
-        }
-      }
-    } else {
-      const eventHandlers = this.eventHandlersMap.get(eventName) ?? [];
-      yield* eventHandlers;
-    }
-  }
-
   *getEventStreamResolver(eventName: string): Generator<EventHandler, void, undefined> {
     if (this.namespaces) {
       const eventsStremResolversMapIterator = this.eventStreamsResolversMap.entries();
@@ -225,5 +241,17 @@ export default class EventHandlersProviderImpl implements EventHandlersProvider 
       const eventStreamHandlers = this.eventStreamsResolversMap.get(eventName);
       if (eventStreamHandlers != null) yield eventStreamHandlers.resolver;
     }
+  }
+
+  *getEventsNames(): Generator<string, void, undefined> {
+    yield* this.eventHandlersMap.keys();
+  }
+
+  *getRelatedEventNames(): Generator<string[], void, undefined> {
+    yield* this.relatedEventsHandlersMap.keys();
+  }
+
+  *getEventStreamNames(): Generator<string, void, undefined> {
+    yield* this.eventStreamsResolversMap.keys();
   }
 }

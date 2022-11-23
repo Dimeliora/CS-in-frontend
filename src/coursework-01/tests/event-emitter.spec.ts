@@ -40,8 +40,8 @@ describe('Implementation of Event Emitter (EE)', () => {
     });
 
     ee.emit('foo', null);
-    ee.removeEvent('foo');
 
+    expect(ee.removeEvent('foo')).toBe(true);
     expect(results).toEqual([3, 1, 2]);
   });
 
@@ -133,6 +133,34 @@ describe('Implementation of Event Emitter (EE)', () => {
     expect(results).toEqual([1, 2]);
   });
 
+  it('Related events timeout - customizable payload lifetime', (done) => {
+    const ee = new EventEmitter({ relatedEventsTimeout: 200 });
+    const results: number[] = [];
+    let counter = 0;
+
+    const event = ee.allOf(['foo', 'bar'], (a: number, b: number) => {
+      results.push(a, b);
+    });
+
+    const id = setInterval(() => {
+      counter += 1;
+
+      if (counter === 1) ee.emit('foo', 1);
+      if (counter === 3) ee.emit('bar', 2);
+      if (counter === 5) {
+        event.off();
+        clearInterval(id);
+
+        try {
+          expect(results).toEqual([]);
+          done();
+        } catch (testError) {
+          done(testError);
+        }
+      }
+    }, 100);
+  });
+
   it('Subscription on event with Promise API', (done) => {
     const ee = new EventEmitter();
 
@@ -148,17 +176,20 @@ describe('Implementation of Event Emitter (EE)', () => {
     ee.emit('foo', 42);
   });
 
-  it('Getting registered event names, handlers', () => {
+  it('Getting registered event names, handlers etc.', () => {
     const ee = new EventEmitter();
-    const cbFooOn = () => {};
-    const cbFooOnce = () => {};
-    const cbBarTimes = () => {};
-    const cbAny = () => {};
 
-    ee.on('foo', cbFooOn);
-    ee.once('foo', cbFooOnce);
-    ee.times('bar', 2, cbBarTimes);
-    ee.any(cbAny);
+    ee.on('foo', () => {});
+    ee.once('foo', () => {});
+    ee.times('bar', 2, () => {});
+
+    ee.any(() => {});
+
+    ee.allOf(['bla', 'bar'], () => {});
+    ee.allOf(['foo', 'buzz'], () => {});
+
+    ee.stream('bar');
+    ee.stream('fizz');
 
     expect(ee.handlers('foo').every((cb) => typeof cb === 'function')).toBe(true);
     expect(ee.handlers('foo').length).toBe(2);
@@ -170,6 +201,13 @@ describe('Implementation of Event Emitter (EE)', () => {
     expect(ee.handlersAny().length).toBe(1);
 
     expect(ee.eventNames()).toEqual(['foo', 'bar']);
+
+    expect(ee.relatedEventNames()).toEqual([
+      ['bla', 'bar'],
+      ['foo', 'buzz'],
+    ]);
+
+    expect(ee.eventStreamNames()).toEqual(['bar', 'fizz']);
   });
 
   it('Event subscription stream with async iterator API', async () => {
@@ -235,8 +273,126 @@ describe('Implementation of Event Emitter (EE)', () => {
     for (const num of [1, 2, 3]) {
       ee.emit('foo.bar', num);
       ee.emit('foo.bla', num * 2);
+      ee.emit('bar.bla', num + 2);
     }
 
     expect(results).toEqual([1, 2, 2, 4, 3, 6]);
+  });
+
+  it('Working with event namespaces (multilevel, many events, custom delimiter)', () => {
+    const ee = new EventEmitter({ namespaces: true, namespaceDelimiter: ':' });
+    const results: number[] = [];
+
+    ee.on('foo:**', () => {
+      results.push(1);
+    });
+
+    ee.on('*:bla:**:bar', () => {
+      results.push(2);
+    });
+
+    ee.on('foo:**:bar', () => {
+      results.push(3);
+    });
+
+    ee.emit('foo', null);
+    ee.emit('foo:bla', null);
+    ee.emit('foo:bla:bar', null);
+    ee.emit('foo:bla:fizz:bar', null);
+
+    expect(results).toEqual([1, 1, 1, 2, 3, 1, 2, 3]);
+  });
+
+  it('Customizable event emit order for different types of event (anyFirst: any => common => related)', () => {
+    const ee = new EventEmitter({ anyFirst: true });
+    const results: number[] = [];
+
+    ee.on('foo', () => {
+      results.push(1);
+    });
+
+    ee.on('foo', () => {
+      results.push(2);
+    });
+
+    ee.on('bar', () => {
+      results.push(3);
+    });
+
+    ee.any(() => {
+      results.push(4);
+    });
+
+    ee.allOf(['foo', 'bar'], () => {
+      results.push(5);
+    });
+
+    ee.emit('foo', null);
+    ee.emit('bar', null);
+
+    expect(results).toEqual([4, 1, 2, 4, 3, 5]);
+  });
+
+  it('Customizable event emit order for different types of event (relatedFirst: related => common => any)', () => {
+    const ee = new EventEmitter({ relatedFirst: true });
+    const results: number[] = [];
+
+    ee.on('foo', () => {
+      results.push(1);
+    });
+
+    ee.on('foo', () => {
+      results.push(2);
+    });
+
+    ee.on('bar', () => {
+      results.push(3);
+    });
+
+    ee.any(() => {
+      results.push(4);
+    });
+
+    ee.allOf(['foo', 'bar'], () => {
+      results.push(5);
+    });
+
+    ee.emit('foo', null);
+    ee.emit('bar', null);
+
+    expect(results).toEqual([1, 2, 4, 5, 3, 4]);
+  });
+
+  it('Event emitter typechecks', () => {
+    expect(() => new EventEmitter({ relatedEventsTimeout: -1000 })).toThrowError(
+      'Timeout value must be greater or equal 0',
+    );
+
+    expect(() => new EventEmitter({ maxListeners: -1 })).toThrowError('Amount of listeners must be greater or equal 0');
+
+    const ee = new EventEmitter();
+
+    // @ts-expect-error
+    expect(() => ee.on('foo')).toThrowError('Event handler must be a type of function');
+
+    // @ts-expect-error
+    expect(() => ee.once('foo')).toThrowError('Event handler must be a type of function');
+
+    expect(() => ee.times('foo', 0, () => {})).toThrowError('Handler call times counter must be greater than 0');
+
+    // @ts-expect-error
+    expect(() => ee.times('foo', 2)).toThrowError('Event handler must be a type of function');
+
+    // @ts-expect-error
+    expect(() => ee.off('foo')).toThrowError('Event handler must be a type of function');
+
+    // @ts-expect-error
+    expect(() => ee.any()).toThrowError('Event handler must be a type of function');
+
+    // @ts-expect-error
+    expect(() => ee.allOf(['foo', 'bar'])).toThrowError('Event handler must be a type of function');
+
+    // @ts-expect-error
+    expect(() => ee.setMaxListeners()).toThrowError('Amount of listeners must be greater or equal 0');
   });
 });
