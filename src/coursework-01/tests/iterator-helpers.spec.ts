@@ -1,4 +1,4 @@
-import seq from '../iterator-helpers/seq';
+import seq from '../src/iterator-helpers/seq';
 
 describe('Implementation of seq - iterates through the all of provided iterables', () => {
   it('Seq must iterate all the elements of provided collections', () => {

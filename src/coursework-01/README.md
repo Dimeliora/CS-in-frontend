@@ -52,6 +52,33 @@
 
 На данный момент могут быть проблемы с шаблонами вида `*.*.*.**.*.*`. Разделитель поддоменов по умолчанию - символ точки, может быть задан в объекте настроек при создании экземпляра класса.
 
+## Определения типов и интерфейсы
+
+Некоторые типы и интерфейсы, используемые в сигнатуре методов класса.
+
+Функция-обработчик события:
+
+```ts
+type EventHandler = (payload: any) => void;
+```
+
+Функция-обработчик связанных событий:
+
+```ts
+type RelatedEventsHandler = (...payloads: any[]) => void;
+```
+
+Объект, возвращаемый методами подписки на события:
+
+```ts
+interface EventUnsubscriber<T> {
+  eventEmitter: T;
+  event: string | string[];
+  handler: EventHandler;
+  off: () => void;
+}
+```
+
 ## API
 
 - [`on(eventName: string, handler: EventHandler): EventUnsubscriber<this>`](#oneventname-string-handler-eventhandler-eventunsubscriber)

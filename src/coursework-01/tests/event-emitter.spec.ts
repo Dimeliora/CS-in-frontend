@@ -1,7 +1,7 @@
-import EventEmitter from '../event-emitter/event-emitter';
-import take from '../async-iterator-helpers/async-itertator-functions/take';
-import map from '../async-iterator-helpers/async-itertator-functions/map';
-import filter from '../async-iterator-helpers/async-itertator-functions/filter';
+import EventEmitter from '../src/event-emitter/event-emitter';
+import take from '../src/async-iterator-helpers/async-itertator-functions/take';
+import map from '../src/async-iterator-helpers/async-itertator-functions/map';
+import filter from '../src/async-iterator-helpers/async-itertator-functions/filter';
 
 describe('Implementation of Event Emitter (EE)', () => {
   it('Subscription on event, emitting event with payload data, event unsubscription', () => {

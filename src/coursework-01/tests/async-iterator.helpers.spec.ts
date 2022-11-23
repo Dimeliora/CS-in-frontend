@@ -1,7 +1,7 @@
-import take from '../async-iterator-helpers/async-itertator-functions/take';
-import filter from '../async-iterator-helpers/async-itertator-functions/filter';
-import map from '../async-iterator-helpers/async-itertator-functions/map';
-import seq from '../async-iterator-helpers/async-itertator-functions/seq';
+import take from '../src/async-iterator-helpers/async-itertator-functions/take';
+import filter from '../src/async-iterator-helpers/async-itertator-functions/filter';
+import map from '../src/async-iterator-helpers/async-itertator-functions/map';
+import seq from '../src/async-iterator-helpers/async-itertator-functions/seq';
 
 describe('Implementation of take - iterates over the first N iterations of async iterable', () => {
   it('Take must iterate with provided amount of iterations', (done) => {

@@ -1,4 +1,4 @@
-import wildcardMatcher from '../helpers/wildcard-matcher';
+import wildcardMatcher from '../src/helpers/wildcard-matcher';
 
 describe('Implementation of wildcard matcher - checks if string with delimiters matches with provided wildcard template', () => {
   it('Must pass strings with single wildcard symbol', () => {
