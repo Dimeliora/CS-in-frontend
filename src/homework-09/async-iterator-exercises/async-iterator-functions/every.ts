@@ -1,9 +1,8 @@
-export default function map<T, M>(
+export default function every<T>(
   asyncIterable: AsyncIterable<T>,
-  mapper: (element: T, index: number, asyncIterable: AsyncIterable<T>) => M,
-): AsyncIterableIterator<M> {
+  predicate: (value: T) => boolean,
+): AsyncIterableIterator<T> {
   const asyncIterator = asyncIterable[Symbol.asyncIterator]();
-  let index = 0;
 
   return {
     async next() {
@@ -11,11 +10,10 @@ export default function map<T, M>(
         asyncIterator
           .next()
           .then(({ done, value }) => {
-            if (done) {
+            if (done || !predicate(value)) {
               resolve({ done: true, value: undefined });
             } else {
-              resolve({ done: false, value: mapper(value, index, asyncIterable) });
-              index += 1;
+              resolve({ done: false, value });
             }
           })
           .catch(reject);

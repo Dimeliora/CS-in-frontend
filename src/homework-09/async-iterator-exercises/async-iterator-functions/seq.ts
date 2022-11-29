@@ -1,21 +1,21 @@
-import type { ExtractAsyncIterablesType } from '../async-iterator.types';
+import type { ExtractAsyncIterablesType } from '../../async-iterator.types';
 
 export default function seq<T extends AsyncIterable<any>[]>(
-  ...iterables: T
+  ...asyncIterables: T
 ): AsyncIterableIterator<ExtractAsyncIterablesType<T>> {
-  let iterablesIndex = 0;
+  let index = 0;
   let currentAsyncIterator: AsyncIterator<ExtractAsyncIterablesType<T>> | null = null;
 
   return {
-    async next(): Promise<IteratorResult<ExtractAsyncIterablesType<T>>> {
+    async next() {
       return new Promise((resolve, reject) => {
-        if (iterablesIndex >= iterables.length) {
+        if (index >= asyncIterables.length) {
           resolve({ done: true, value: undefined });
           return;
         }
 
         if (currentAsyncIterator === null) {
-          currentAsyncIterator = iterables[iterablesIndex][Symbol.asyncIterator]();
+          currentAsyncIterator = asyncIterables[index][Symbol.asyncIterator]();
         }
 
         currentAsyncIterator
@@ -23,7 +23,7 @@ export default function seq<T extends AsyncIterable<any>[]>(
           .then(({ done, value }) => {
             if (done) {
               currentAsyncIterator = null;
-              iterablesIndex += 1;
+              index += 1;
               resolve(this.next());
             } else {
               resolve({ done: false, value });

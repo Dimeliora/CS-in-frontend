@@ -1,9 +1,9 @@
-export default function take<T>(iterable: AsyncIterable<T>, takesCount: number): AsyncIterableIterator<T> {
-  const asyncIterator = iterable[Symbol.asyncIterator]();
+export default function take<T>(asyncIterable: AsyncIterable<T>, takesCount: number): AsyncIterableIterator<T> {
+  const asyncIterator = asyncIterable[Symbol.asyncIterator]();
   let iterationsCount = 0;
 
   return {
-    async next(): Promise<IteratorResult<T>> {
+    async next() {
       return new Promise((resolve, reject) => {
         asyncIterator
           .next()

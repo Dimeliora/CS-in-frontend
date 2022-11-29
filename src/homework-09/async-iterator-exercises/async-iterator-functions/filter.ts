@@ -1,12 +1,12 @@
 export default function filter<T>(
-  iterable: AsyncIterable<T>,
-  predicate: (element: T, index: number, iterable: AsyncIterable<T>) => boolean,
+  asyncIterable: AsyncIterable<T>,
+  predicate: (element: T, index: number, asyncIterable: AsyncIterable<T>) => boolean,
 ): AsyncIterableIterator<T> {
-  const asyncIterator = iterable[Symbol.asyncIterator]();
+  const asyncIterator = asyncIterable[Symbol.asyncIterator]();
   let index = 0;
 
   return {
-    async next(): Promise<IteratorResult<T>> {
+    async next() {
       return new Promise((resolve, reject) => {
         asyncIterator
           .next()
@@ -16,7 +16,7 @@ export default function filter<T>(
               return;
             }
 
-            if (predicate(value, index, iterable)) {
+            if (predicate(value, index, asyncIterable)) {
               resolve({ done: false, value });
               index += 1;
               return;
